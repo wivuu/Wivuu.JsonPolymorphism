@@ -14,8 +14,8 @@
         <PackageLicenseFile>LICENSE</PackageLicenseFile>
         <RepositoryUrl>https://github.com/wivuu/Wivuu.JsonPolymorphism.git</RepositoryUrl>
         <RepositoryType>git</RepositoryType>
-        <IncludeSymbols>true</IncludeSymbols>
-        <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+        <!-- <IncludeSymbols>true</IncludeSymbols> -->
+        <!-- <SymbolPackageFormat>snupkg</SymbolPackageFormat> -->
     </PropertyGroup>
     
     <ItemGroup>
