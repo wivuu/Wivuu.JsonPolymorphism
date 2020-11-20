@@ -1,13 +1,13 @@
 <Project>
 
     <PropertyGroup>
-        <VersionPrefix>0.0.2-beta</VersionPrefix>
+        <VersionPrefix>0.0.3-beta</VersionPrefix>
         <Authors>Erik O'Leary</Authors>
         <Company>Wivuu</Company>
         <Product>Wivuu JsonPolymorphism</Product>
         <Description>Adds System.Text.Json serializer support for polymorphism with a discriminator attribute.</Description>
         <ReleaseNotes>
-        - Include analyzers package
+        - Output to analyzers folder
         </ReleaseNotes>
         <PackageTags>net5;json;serialize;polymorphism</PackageTags>
         <PackageProjectUrl>https://github.com/wivuu/Wivuu.JsonPolymorphism</PackageProjectUrl>
