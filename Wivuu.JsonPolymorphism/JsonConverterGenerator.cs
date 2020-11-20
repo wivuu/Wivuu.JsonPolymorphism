@@ -111,12 +111,13 @@ namespace Wivuu.JsonPolymorphism
 
                     // Converter class
                     var visibility =
-                        parentTypeNode.Modifiers.Any(SyntaxKind.InternalKeyword) ? "internal" :
-                        parentTypeNode.Modifiers.Any(SyntaxKind.ProtectedKeyword) ? "protected" :
-                        parentTypeNode.Modifiers.Any(SyntaxKind.PrivateKeyword) ? "private" : 
-                        "public";
+                        parentTypeNode.Modifiers.Any(SyntaxKind.InternalKeyword) ? "internal " :
+                        parentTypeNode.Modifiers.Any(SyntaxKind.ProtectedKeyword) ? "protected " :
+                        parentTypeNode.Modifiers.Any(SyntaxKind.PrivateKeyword) ? "private " : 
+                        parentTypeNode.Modifiers.Any(SyntaxKind.PublicKeyword) ? "public " : 
+                        "";
 
-                    using (sb.AppendLine($"{visibility} class {parentSymbol.Name}Converter : JsonConverter<{parentSymbol.Name}>").Indent('{'))
+                    using (sb.AppendLine($"{visibility}class {parentSymbol.Name}Converter : JsonConverter<{parentSymbol.Name}>").Indent('{'))
                     {
                         // Read Method
                         using (sb.AppendLine($"public override {parentSymbol.Name}? Read").Indent('('))
@@ -206,7 +207,7 @@ namespace Wivuu.JsonPolymorphism
                                 }
 
                                 using (sb.AppendLine($"default:").Indent())
-                                    sb.AppendLine($"throw new JsonException($\"{{value.Kind}} is not a supported value\");");
+                                    sb.AppendLine($"throw new JsonException($\"{{value.{symbol.MetadataName}}} is not a supported value\");");
                             }
                         }
                     }

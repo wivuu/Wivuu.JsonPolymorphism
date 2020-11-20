@@ -5,6 +5,8 @@ VisualStudioVersion = 15.0.26124.0
 MinimumVisualStudioVersion = 15.0.26124.0
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wivuu.JsonPolymorphism", "Wivuu.JsonPolymorphism\Wivuu.JsonPolymorphism.csproj", "{F22FE6F0-558B-4479-8A96-579E16508314}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests", "Tests\Tests.csproj", "{3DC3B29C-A7BD-442B-994D-E0EE0D70427E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -30,5 +32,17 @@ Global
 		{F22FE6F0-558B-4479-8A96-579E16508314}.Release|x64.Build.0 = Release|Any CPU
 		{F22FE6F0-558B-4479-8A96-579E16508314}.Release|x86.ActiveCfg = Release|Any CPU
 		{F22FE6F0-558B-4479-8A96-579E16508314}.Release|x86.Build.0 = Release|Any CPU
+		{3DC3B29C-A7BD-442B-994D-E0EE0D70427E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3DC3B29C-A7BD-442B-994D-E0EE0D70427E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3DC3B29C-A7BD-442B-994D-E0EE0D70427E}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{3DC3B29C-A7BD-442B-994D-E0EE0D70427E}.Debug|x64.Build.0 = Debug|Any CPU
+		{3DC3B29C-A7BD-442B-994D-E0EE0D70427E}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{3DC3B29C-A7BD-442B-994D-E0EE0D70427E}.Debug|x86.Build.0 = Debug|Any CPU
+		{3DC3B29C-A7BD-442B-994D-E0EE0D70427E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3DC3B29C-A7BD-442B-994D-E0EE0D70427E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3DC3B29C-A7BD-442B-994D-E0EE0D70427E}.Release|x64.ActiveCfg = Release|Any CPU
+		{3DC3B29C-A7BD-442B-994D-E0EE0D70427E}.Release|x64.Build.0 = Release|Any CPU
+		{3DC3B29C-A7BD-442B-994D-E0EE0D70427E}.Release|x86.ActiveCfg = Release|Any CPU
+		{3DC3B29C-A7BD-442B-994D-E0EE0D70427E}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
