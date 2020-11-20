@@ -1,4 +1,7 @@
 # JsonPolymorphism
+[![Nuget](https://github.com/wivuu/Wivuu.JsonPolymorphism/workflows/Nuget/badge.svg)](https://github.com/wivuu/Wivuu.JsonPolymorphism/actions?query=workflow%3ANuget)
+
+[![wivuu.jsonpolymorphism](https://img.shields.io/nuget/v/wivuu.jsonpolymorphism.svg?label=wivuu.jsonpolymorphism)](https://www.nuget.org/packages/Wivuu.JsonPolymorphism/)
 
 Easily add System.Text.Json serialization support for polymorphic models in C# / .NET 5. Works by generating a `JsonConverter` tailored to your class/record at compile-time and attaching it via `JsonConverterAttribute`. All you need is a `discriminator` property on your base types marked with the new `JsonDiscriminator` attribute
 
