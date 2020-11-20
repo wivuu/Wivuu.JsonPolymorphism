@@ -1,0 +1,25 @@
+<Project>
+
+    <PropertyGroup>
+        <VersionPrefix>0.0.1-beta</VersionPrefix>
+        <Authors>Erik O'Leary</Authors>
+        <Company>Wivuu</Company>
+        <Product>Wivuu JsonPolymorphism</Product>
+        <Description>Adds System.Text.Json serializer support for polymorphism with a discriminator attribute.</Description>
+        <ReleaseNotes>
+        - First beta release
+        </ReleaseNotes>
+        <PackageTags>net5;json;serialize;polymorphism</PackageTags>
+        <PackageProjectUrl>https://github.com/wivuu/Wivuu.JsonPolymorphism</PackageProjectUrl>
+        <PackageLicenseFile>LICENSE</PackageLicenseFile>
+        <RepositoryUrl>https://github.com/wivuu/Wivuu.JsonPolymorphism.git</RepositoryUrl>
+        <RepositoryType>git</RepositoryType>
+        <IncludeSymbols>true</IncludeSymbols>
+        <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    </PropertyGroup>
+    
+    <ItemGroup>
+        <None Include="../LICENSE" Pack="true" Visible="false" PackagePath=""/>
+    </ItemGroup>
+
+</Project>
