@@ -1,7 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <OutputType>Exe</OutputType>
     <Nullable>enable</Nullable>
     <LangVersion>9</LangVersion>
     <TargetFramework>netstandard2.0</TargetFramework>
