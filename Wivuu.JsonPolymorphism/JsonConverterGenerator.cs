@@ -47,6 +47,18 @@ namespace Wivuu.JsonPolymorphism
 
         public void Execute(GeneratorExecutionContext context)
         {
+            context.AddSource("JsonDiscriminatorAttribute.cs", SourceText.From(
+                @"using System;
+
+namespace Wivuu.JsonPolymorphism
+{
+    [AttributeUsage(AttributeTargets.Property | AttributeTargets.Parameter, Inherited = false, AllowMultiple = false)]
+    public class JsonDiscriminatorAttribute : Attribute
+    {
+    }
+}
+", Encoding.UTF8));
+
             // retreive the populated receiver 
             if (context.SyntaxReceiver is not JsonDiscriminatorReceiver receiver ||
                 !receiver.AnyCandidates)
@@ -288,8 +300,7 @@ namespace Wivuu.JsonPolymorphism
         /// </summary>
         public IEnumerable<(CSharpSyntaxNode node, ISymbol symbol)> GetDiscriminators(GeneratorExecutionContext context)
         {
-            var attributeSymbol = context.Compilation.GetTypeByMetadataName(
-                typeof(JsonDiscriminatorAttribute).FullName);
+            var attributeSymbol = context.Compilation.GetTypeByMetadataName("Wivuu.JsonPolymorphism.JsonDiscriminatorAttribute");
 
             // Find all discriminators
             for (var i = 0; i < Candidates.Count; ++i)
