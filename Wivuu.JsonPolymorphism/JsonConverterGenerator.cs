@@ -56,21 +56,21 @@ namespace Wivuu.JsonPolymorphism
 
         public void Execute(GeneratorExecutionContext context)
         {
-            context.AddSource("JsonDiscriminatorAttribute.cs", SourceText.From(AttributeText, Encoding.UTF8));
+            var jsonAttributeSource = SourceText.From(AttributeText, Encoding.UTF8);
+            context.AddSource("JsonDiscriminatorAttribute.cs", jsonAttributeSource);
 
-            // retreive the populated receiver 
+            // Retreive the populated receiver 
             if (context.SyntaxReceiver is not JsonDiscriminatorReceiver receiver ||
                 !receiver.AnyCandidates)
                 return;
 
-            // we're going to create a new compilation that contains the attribute.
-            // TODO: we should allow source generators to provide source during initialize, so that this step isn't required.
-            
+            // Retrieve CSharp compilation from context
             if (context.Compilation is not CSharpCompilation prevCompilation)
                 return;
 
+            // Add new attribute to compilation
             var options     = prevCompilation.SyntaxTrees[0].Options as CSharpParseOptions;
-            var compilation = context.Compilation.AddSyntaxTrees(CSharpSyntaxTree.ParseText(SourceText.From(AttributeText, Encoding.UTF8), options));
+            var compilation = context.Compilation.AddSyntaxTrees(CSharpSyntaxTree.ParseText(jsonAttributeSource, options));
 
             // get the newly bound attribute, and INotifyPropertyChanged
             var attributeSymbol = compilation.GetTypeByMetadataName("Wivuu.JsonPolymorphism.JsonDiscriminatorAttribute");
@@ -116,7 +116,8 @@ namespace Wivuu.JsonPolymorphism
 
                 var sb = new IndentedStringBuilder();
 
-                sb.AppendLine("using System;")
+                sb.AppendLine("#nullable enable")
+                  .AppendLine("using System;")
                   .AppendLine("using System.Text.Json;")
                   .AppendLine("using System.Text.Json.Serialization;")
                   .AppendLine()
