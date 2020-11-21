@@ -60,7 +60,7 @@ namespace Wivuu.JsonPolymorphism
 
             // Retreive the populated receiver 
             if (context.SyntaxReceiver is not JsonDiscriminatorReceiver receiver ||
-                !receiver.AnyCandidates)
+                receiver.Candidates.Count == 0)
                 return;
 
             // Retrieve CSharp compilation from context
@@ -257,23 +257,19 @@ namespace Wivuu.JsonPolymorphism
                 }
             }
         }
-        
-        static TypeDeclarationSyntax? GetParentDeclaration(SyntaxNode node)
-        {
-            if (node.Parent is TypeDeclarationSyntax type)
-                return type;
-            else if (node.Parent is not null)
-                return GetParentDeclaration(node.Parent);
-            else
-                return null;
-        }
+
+        static TypeDeclarationSyntax? GetParentDeclaration(SyntaxNode node) => 
+            node.Parent switch
+            {
+                TypeDeclarationSyntax type => type,
+                not null => GetParentDeclaration(node.Parent),
+                _ => null
+            };
     }
 
     class JsonDiscriminatorReceiver : ISyntaxReceiver
     {
         public List<CSharpSyntaxNode> Candidates { get; } = new();
-
-        public bool AnyCandidates => Candidates.Count != 0;
 
         public void OnVisitSyntaxNode(SyntaxNode syntaxNode)
         {
