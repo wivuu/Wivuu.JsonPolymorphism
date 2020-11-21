@@ -13,7 +13,7 @@ namespace Wivuu.JsonPolymorphism
         static readonly DiagnosticDescriptor DiagNotPartial = new DiagnosticDescriptor(
             id: "WIVUUJSONPOLY001",
             title: "Type with discriminator must be marked 'partial'",
-            messageFormat: "Type '{0}' not marked 'Partial'.",
+            messageFormat: "Type '{0}' not marked 'Partial'",
             category: "WivuuJsonPolymorphism",
             DiagnosticSeverity.Error,
             isEnabledByDefault: true);
@@ -21,7 +21,7 @@ namespace Wivuu.JsonPolymorphism
         static readonly DiagnosticDescriptor DiagNotEnum = new DiagnosticDescriptor(
             id: "WIVUUJSONPOLY002",
             title: "Type discriminator must be an enum",
-            messageFormat: "Type '{0}' is not an enum.",
+            messageFormat: "Type '{0}' is not an enum",
             category: "WivuuJsonPolymorphism",
             DiagnosticSeverity.Error,
             isEnabledByDefault: true);
@@ -29,7 +29,7 @@ namespace Wivuu.JsonPolymorphism
         static readonly DiagnosticDescriptor DiagNoCorrespondingType = new DiagnosticDescriptor(
             id: "WIVUUJSONPOLY003",
             title: "No type corresponding with enum member",
-            messageFormat: "Member '{0}' has no corresponding type.",
+            messageFormat: "Member '{0}' has no corresponding type",
             category: "WivuuJsonPolymorphism",
             DiagnosticSeverity.Error,
             isEnabledByDefault: true);
