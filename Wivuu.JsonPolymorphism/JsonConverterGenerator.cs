@@ -71,6 +71,9 @@ namespace Wivuu.JsonPolymorphism
             var options     = prevCompilation.SyntaxTrees[0].Options as CSharpParseOptions;
             var compilation = context.Compilation.AddSyntaxTrees(CSharpSyntaxTree.ParseText(jsonAttributeSource, options));
 
+            // Retrieve enum type
+            var enumType = compilation.GetTypeByMetadataName(typeof(System.Enum).FullName);
+
             // Create JsonConverters
             foreach (var (node, symbol) in receiver.GetDiscriminators(compilation))
             {
@@ -89,15 +92,13 @@ namespace Wivuu.JsonPolymorphism
                 }
 
                 // Ensure that the discriminator is an enum
-                var enumTy = compilation.GetTypeByMetadataName(typeof(System.Enum).FullName);
-
                 var discriminatorType =
                     symbol is IParameterSymbol param ? param.Type as INamedTypeSymbol :
                     symbol is IPropertySymbol prop   ? prop.Type as INamedTypeSymbol  :
                     default;
 
                 if (discriminatorType is null ||
-                    discriminatorType.BaseType?.Equals(enumTy, SymbolEqualityComparer.Default) is not true)
+                    discriminatorType.BaseType?.Equals(enumType, SymbolEqualityComparer.Default) is not true)
                 {
                     context.ReportDiagnostic(
                         Diagnostic.Create(DiagNotEnum, symbol.Locations[0], discriminatorType?.Name ?? symbol.Name));
