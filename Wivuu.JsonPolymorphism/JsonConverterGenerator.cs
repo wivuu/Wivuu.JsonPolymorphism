@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
+﻿using System.Collections.Generic;
 using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -38,7 +36,7 @@ namespace Wivuu.JsonPolymorphism
 
         static readonly string AttributeText = @"using System;
 
-namespace Wivuu.JsonPolymorphism
+namespace System.Text.Json.Serialization
 {
     [AttributeUsage(AttributeTargets.Property | AttributeTargets.Parameter, Inherited = false, AllowMultiple = false)]
     public class JsonDiscriminatorAttribute : Attribute { }
@@ -71,9 +69,6 @@ namespace Wivuu.JsonPolymorphism
             // Add new attribute to compilation
             var options     = prevCompilation.SyntaxTrees[0].Options as CSharpParseOptions;
             var compilation = context.Compilation.AddSyntaxTrees(CSharpSyntaxTree.ParseText(jsonAttributeSource, options));
-
-            // get the newly bound attribute, and INotifyPropertyChanged
-            var attributeSymbol = compilation.GetTypeByMetadataName("Wivuu.JsonPolymorphism.JsonDiscriminatorAttribute");
 
             // Create JsonConverters
             foreach (var (node, symbol) in receiver.GetDiscriminators(compilation))
@@ -314,7 +309,7 @@ namespace Wivuu.JsonPolymorphism
         public IEnumerable<(CSharpSyntaxNode node, ISymbol symbol)> GetDiscriminators(Compilation compilation)
         {
             // get the newly bound attribute, and INotifyPropertyChanged
-            var attributeSymbol = compilation.GetTypeByMetadataName("Wivuu.JsonPolymorphism.JsonDiscriminatorAttribute");
+            var attributeSymbol = compilation.GetTypeByMetadataName("System.Text.Json.Serialization.JsonDiscriminatorAttribute");
 
             // Find all discriminators
             for (var i = 0; i < Candidates.Count; ++i)
