@@ -36,6 +36,15 @@ namespace Wivuu.JsonPolymorphism
             DiagnosticSeverity.Error,
             isEnabledByDefault: true);
 
+        static readonly string AttributeText = @"using System;
+
+namespace Wivuu.JsonPolymorphism
+{
+    [AttributeUsage(AttributeTargets.Property | AttributeTargets.Parameter, Inherited = false, AllowMultiple = false)]
+    public class JsonDiscriminatorAttribute : Attribute { }
+}
+";
+
         public void Initialize(GeneratorInitializationContext context)
         {
 #if DEBUG
@@ -47,25 +56,23 @@ namespace Wivuu.JsonPolymorphism
 
         public void Execute(GeneratorExecutionContext context)
         {
-            context.AddSource("JsonDiscriminatorAttribute.cs", SourceText.From(
-                @"using System;
-
-namespace Wivuu.JsonPolymorphism
-{
-    [AttributeUsage(AttributeTargets.Property | AttributeTargets.Parameter, Inherited = false, AllowMultiple = false)]
-    public class JsonDiscriminatorAttribute : Attribute
-    {
-    }
-}
-", Encoding.UTF8));
+            context.AddSource("JsonDiscriminatorAttribute.cs", SourceText.From(AttributeText, Encoding.UTF8));
 
             // retreive the populated receiver 
             if (context.SyntaxReceiver is not JsonDiscriminatorReceiver receiver ||
                 !receiver.AnyCandidates)
                 return;
 
+            // we're going to create a new compilation that contains the attribute.
+            // TODO: we should allow source generators to provide source during initialize, so that this step isn't required.
+            var options = (context.Compilation as CSharpCompilation).SyntaxTrees[0].Options as CSharpParseOptions;
+            var compilation = context.Compilation.AddSyntaxTrees(CSharpSyntaxTree.ParseText(SourceText.From(AttributeText, Encoding.UTF8), options));
+
+            // get the newly bound attribute, and INotifyPropertyChanged
+            var attributeSymbol = compilation.GetTypeByMetadataName("Wivuu.JsonPolymorphism.JsonDiscriminatorAttribute");
+
             // Create JsonConverters
-            foreach (var (node, symbol) in receiver.GetDiscriminators(context))
+            foreach (var (node, symbol) in receiver.GetDiscriminators(compilation))
             {
                 if (GetParentDeclaration(node) is not TypeDeclarationSyntax parentTypeNode)
                     continue;
@@ -84,7 +91,7 @@ namespace Wivuu.JsonPolymorphism
                 }
 
                 // Ensure that the discriminator is an enum
-                var enumTy = context.Compilation.GetTypeByMetadataName(typeof(System.Enum).FullName);
+                var enumTy = compilation.GetTypeByMetadataName(typeof(System.Enum).FullName);
 
                 var discriminatorType =
                     symbol is IParameterSymbol param ? param.Type as INamedTypeSymbol:
@@ -101,7 +108,7 @@ namespace Wivuu.JsonPolymorphism
 
                 // Get all possible enum values and corresponding types
                 var classMembers = new List<(string, INamedTypeSymbol)>(
-                    GetCorrespondingTypes(context, parentSymbol, discriminatorType));
+                    GetCorrespondingTypes(context, compilation, parentSymbol, discriminatorType));
 
                 var sb = new IndentedStringBuilder();
 
@@ -232,13 +239,14 @@ namespace Wivuu.JsonPolymorphism
 
         static IEnumerable<(string name, INamedTypeSymbol match)> GetCorrespondingTypes(
             GeneratorExecutionContext context, 
+            Compilation compilation,
             INamedTypeSymbol parentSymbol,
             INamedTypeSymbol discriminatorEnum)
         {
             foreach (var name in discriminatorEnum.MemberNames)
             {
                 // Get matching types in the context
-                var matches = context.Compilation.GetSymbolsWithName(
+                var matches = compilation.GetSymbolsWithName(
                     p => p.Contains(name),
                     SymbolFilter.Type
                 );
@@ -277,7 +285,7 @@ namespace Wivuu.JsonPolymorphism
 
     class JsonDiscriminatorReceiver : ISyntaxReceiver
     {
-        private List<CSharpSyntaxNode> Candidates { get; } = new();
+        public List<CSharpSyntaxNode> Candidates { get; } = new();
 
         public bool AnyCandidates => Candidates.Count != 0;
 
@@ -298,15 +306,16 @@ namespace Wivuu.JsonPolymorphism
         /// <summary>
         /// Retrieve all the discriminators from the execution context
         /// </summary>
-        public IEnumerable<(CSharpSyntaxNode node, ISymbol symbol)> GetDiscriminators(GeneratorExecutionContext context)
+        public IEnumerable<(CSharpSyntaxNode node, ISymbol symbol)> GetDiscriminators(Compilation compilation)
         {
-            var attributeSymbol = context.Compilation.GetTypeByMetadataName("Wivuu.JsonPolymorphism.JsonDiscriminatorAttribute");
+            // get the newly bound attribute, and INotifyPropertyChanged
+            var attributeSymbol = compilation.GetTypeByMetadataName("Wivuu.JsonPolymorphism.JsonDiscriminatorAttribute");
 
             // Find all discriminators
             for (var i = 0; i < Candidates.Count; ++i)
             {
                 var node  = Candidates[i];
-                var model = context.Compilation.GetSemanticModel(node.SyntaxTree);
+                var model = compilation.GetSemanticModel(node.SyntaxTree);
 
                 if (model.GetDeclaredSymbol(node) is not ISymbol symbol)
                     continue;
