@@ -23,11 +23,11 @@ namespace Tests
 
     // Animals
     record Insect(int NumLegs = 6, int NumEyes=4) : Animal(AnimalType.Insect, "Insectoid");
-    partial record Mammal([JsonDiscriminator] MammalSpecies species, int NumNipples = 2) : Animal(AnimalType.Mammal, "Mammalian");
+    partial record Mammal([JsonDiscriminator] MammalSpecies Species, int NumNipples = 2, string Name = "Mammalian") : Animal(AnimalType.Mammal, Name);
     record Reptile(bool ColdBlooded = true) : Animal(AnimalType.Reptile, "Reptilian");
 
     // Mammals
-    record Dog() : Mammal(MammalSpecies.Dog, NumNipples: 8);
+    record Dog(string Name) : Mammal(MammalSpecies.Dog, NumNipples: 8, Name);
     record Cat() : Mammal(MammalSpecies.Cat, NumNipples: 8);
     record Monkey() : Mammal(MammalSpecies.Monkey, NumNipples: 2);
 
@@ -46,7 +46,7 @@ namespace Tests
             Animal[] animals = 
             {
                 new Insect(NumLegs: 8, NumEyes: 6),
-                new Dog(),
+                new Dog(Name: "Fido"),
                 new Reptile(ColdBlooded: false),
             };
 
@@ -71,7 +71,7 @@ namespace Tests
             Animal[] animals = 
             {
                 new Insect(NumLegs: 8, NumEyes: 6),
-                new Dog(),
+                new Dog(Name: "Fido"),
                 new Reptile(ColdBlooded: false),
             };
 
@@ -95,7 +95,7 @@ namespace Tests
             Animal[] animals = 
             {
                 new Insect(NumLegs: 8, NumEyes: 6),
-                new Dog(),
+                new Dog(Name: "Fido"),
                 new Reptile(ColdBlooded: false),
             };
 
