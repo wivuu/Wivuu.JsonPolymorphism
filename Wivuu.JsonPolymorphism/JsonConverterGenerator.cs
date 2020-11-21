@@ -65,7 +65,11 @@ namespace Wivuu.JsonPolymorphism
 
             // we're going to create a new compilation that contains the attribute.
             // TODO: we should allow source generators to provide source during initialize, so that this step isn't required.
-            var options = (context.Compilation as CSharpCompilation).SyntaxTrees[0].Options as CSharpParseOptions;
+            
+            if (context.Compilation is not CSharpCompilation prevCompilation)
+                return;
+
+            var options     = prevCompilation.SyntaxTrees[0].Options as CSharpParseOptions;
             var compilation = context.Compilation.AddSyntaxTrees(CSharpSyntaxTree.ParseText(SourceText.From(AttributeText, Encoding.UTF8), options));
 
             // get the newly bound attribute, and INotifyPropertyChanged
