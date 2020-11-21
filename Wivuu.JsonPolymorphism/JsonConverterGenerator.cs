@@ -76,10 +76,8 @@ namespace System.Text.Json.Serialization
                 if (GetParentDeclaration(node) is not TypeDeclarationSyntax parentTypeNode)
                     continue;
 
-                var parentSymbol = symbol.ContainingType;
-
-                if (parentSymbol is null)
-                    throw new System.Exception("Unable to find containing type");
+                if (symbol.ContainingType is not INamedTypeSymbol parentSymbol)
+                    continue;
 
                 // Ensure that parent type is partial so we can attach the JsonConverter attribute
                 if (!parentTypeNode.Modifiers.Any(SyntaxKind.PartialKeyword))
@@ -95,7 +93,7 @@ namespace System.Text.Json.Serialization
                 var discriminatorType =
                     symbol is IParameterSymbol param ? param.Type as INamedTypeSymbol:
                     symbol is IPropertySymbol prop ? prop.Type as INamedTypeSymbol :
-                    throw new System.NotSupportedException();
+                    default;
 
                 if (discriminatorType is null ||
                     discriminatorType.BaseType?.Equals(enumTy, SymbolEqualityComparer.Default) is not true)
@@ -150,7 +148,7 @@ namespace System.Text.Json.Serialization
                         using (sb.Indent('{'))
                         {
                             // TODO: Determine better way to find in case insensitve way
-                            var ident = symbol.MetadataName ?? throw new System.Exception("Unable to determine symbol name");
+                            var ident      = symbol.MetadataName;
                             var camelIdent = string.Concat(char.ToLowerInvariant(ident[0]), ident.Substring(1));
 
                             sb.AppendLine("var deserializedObj = JsonSerializer.Deserialize<JsonElement>(ref reader, options);")
