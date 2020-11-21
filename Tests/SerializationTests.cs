@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Wivuu.JsonPolymorphism;
@@ -33,41 +34,10 @@ namespace Tests
 
     public class SerializationTests
     {
-        [Fact]
-        public void TestEnumCamelCaseSerialization()
+        [Theory]
+        [MemberData(nameof(Options))]
+        public void TestSerialization(JsonSerializerOptions options)
         {
-            JsonSerializerOptions options = new()
-            {
-                PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-            };
-
-            options.Converters.Add(new JsonStringEnumConverter());
-            
-            Animal[] animals = 
-            {
-                new Insect(NumLegs: 8, NumEyes: 6),
-                new Dog(Name: "Fido"),
-                new Reptile(ColdBlooded: false),
-            };
-
-            var serialized          = JsonSerializer.Serialize(animals, options);
-            var animalsDeserialized = JsonSerializer.Deserialize<Animal[]>(serialized, options);
-            
-            if (animalsDeserialized is null)
-                throw new System.Exception("Unable to deserialize");
-
-            Assert.Equal(animals.Length, animalsDeserialized.Length);
-
-            for (var i = 0; i < animals.Length; ++i)
-                Assert.Equal(animals[i], animalsDeserialized[i]);
-        }
-        
-        [Fact]
-        public void TestEnumPascalSerialization()
-        {
-            JsonSerializerOptions options = new();
-            options.Converters.Add(new JsonStringEnumConverter());
-            
             Animal[] animals = 
             {
                 new Insect(NumLegs: 8, NumEyes: 6),
@@ -86,29 +56,36 @@ namespace Tests
             for (var i = 0; i < animals.Length; ++i)
                 Assert.Equal(animals[i], animalsDeserialized[i]);
         }
-        
-        [Fact]
-        public void TestIntSerialization()
+
+        public static IEnumerable<object[]> Options
         {
-            JsonSerializerOptions options = new();
-            
-            Animal[] animals = 
+            get
             {
-                new Insect(NumLegs: 8, NumEyes: 6),
-                new Dog(Name: "Fido"),
-                new Reptile(ColdBlooded: false),
-            };
+                // TestEnumCamelCaseSerialization
+                {
+                    JsonSerializerOptions options = new()
+                    {
+                        PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+                    };
 
-            var serialized          = JsonSerializer.Serialize(animals, options);
-            var animalsDeserialized = JsonSerializer.Deserialize<Animal[]>(serialized, options);
-            
-            if (animalsDeserialized is null)
-                throw new System.Exception("Unable to deserialize");
-                
-            Assert.Equal(animals.Length, animalsDeserialized.Length);
+                    options.Converters.Add(new JsonStringEnumConverter());
 
-            for (var i = 0; i < animals.Length; ++i)
-                Assert.Equal(animals[i], animalsDeserialized[i]);
+                    yield return new [] { options };
+                }
+
+                // TestEnumPascalSerialization
+                {
+                    JsonSerializerOptions options = new();
+                    options.Converters.Add(new JsonStringEnumConverter());
+                    
+                    yield return new [] { options };
+                }
+
+                // Test Defaults
+                {
+                    yield return new [] { new JsonSerializerOptions() };
+                }
+            }
         }
     }
 }
