@@ -13,7 +13,7 @@ namespace Wivuu.JsonPolymorphism
 
         public int SpacePerIndent { get; set; } = 4;
 
-        public IndentedStringBuilder() => 
+        public IndentedStringBuilder() =>
             _internal = new StringBuilder();
 
         public IndentedStringBuilder(string value) =>
@@ -71,6 +71,14 @@ namespace Wivuu.JsonPolymorphism
                     )
                     .AppendLine();
             });
+        }
+
+        public IndentedStringBuilder Indent(char ch, Action<IndentedStringBuilder> callback, string? endCh = null, int level = 1)
+        {
+            using (Indent(ch, endCh, level))
+                callback(this);
+
+            return this;
         }
 
         public IDisposable Indent(int level = 1)
