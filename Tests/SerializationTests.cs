@@ -12,11 +12,24 @@ namespace Tests
         Reptile,
     }
 
+    enum MammalSpecies
+    {
+        Dog,
+        Cat,
+        Monkey,
+    }
+
     abstract partial record Animal( [JsonDiscriminator] AnimalType type, string Name );
 
+    // Animals
     record Insect(int NumLegs = 6, int NumEyes=4) : Animal(AnimalType.Insect, "Insectoid");
-    record Mammal(int NumNipples = 2) : Animal(AnimalType.Mammal, "Mammalian");
+    partial record Mammal([JsonDiscriminator] MammalSpecies species, int NumNipples = 2) : Animal(AnimalType.Mammal, "Mammalian");
     record Reptile(bool ColdBlooded = true) : Animal(AnimalType.Reptile, "Reptilian");
+
+    // Mammals
+    record Dog() : Mammal(MammalSpecies.Dog, NumNipples: 8);
+    record Cat() : Mammal(MammalSpecies.Cat, NumNipples: 8);
+    record Monkey() : Mammal(MammalSpecies.Monkey, NumNipples: 2);
 
     public class SerializationTests
     {
@@ -33,7 +46,7 @@ namespace Tests
             Animal[] animals = 
             {
                 new Insect(NumLegs: 8, NumEyes: 6),
-                new Mammal(NumNipples: 6),
+                new Dog(),
                 new Reptile(ColdBlooded: false),
             };
 
@@ -58,7 +71,7 @@ namespace Tests
             Animal[] animals = 
             {
                 new Insect(NumLegs: 8, NumEyes: 6),
-                new Mammal(NumNipples: 6),
+                new Dog(),
                 new Reptile(ColdBlooded: false),
             };
 
@@ -82,7 +95,7 @@ namespace Tests
             Animal[] animals = 
             {
                 new Insect(NumLegs: 8, NumEyes: 6),
-                new Mammal(NumNipples: 6),
+                new Dog(),
                 new Reptile(ColdBlooded: false),
             };
 
