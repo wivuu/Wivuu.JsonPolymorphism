@@ -23,7 +23,7 @@ namespace Tests
 
     // Animals
     record Insect(int NumLegs = 6, int NumEyes=4) : Animal(AnimalType.Insect, "Insectoid");
-    partial record Mammal([JsonDiscriminator] MammalSpecies Species, int NumNipples = 2, string Name = "Mammalian") : Animal(AnimalType.Mammal, Name);
+    abstract partial record Mammal([JsonDiscriminator] MammalSpecies Species, int NumNipples = 2, string Name = "Mammalian") : Animal(AnimalType.Mammal, Name);
     record Reptile(bool ColdBlooded = true) : Animal(AnimalType.Reptile, "Reptilian");
 
     // Mammals

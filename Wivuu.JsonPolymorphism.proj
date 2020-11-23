@@ -1,13 +1,13 @@
 <Project>
 
     <PropertyGroup>
-        <VersionPrefix>0.0.6-beta</VersionPrefix>
+        <VersionPrefix>0.0.1</VersionPrefix>
         <Authors>Erik O'Leary</Authors>
         <Company>Wivuu</Company>
         <Product>Wivuu JsonPolymorphism</Product>
         <Description>Adds System.Text.Json serializer support for polymorphism with a discriminator attribute.</Description>
         <ReleaseNotes>
-        - Inject attribute into existing System.Text.Json.Serialization namespace
+        - Disallow JsonDiscriminator on concrete types (causes stack overflow on serialization)
         </ReleaseNotes>
         <PackageTags>net5;json;serialize;polymorphism</PackageTags>
         <PackageProjectUrl>https://github.com/wivuu/Wivuu.JsonPolymorphism</PackageProjectUrl>

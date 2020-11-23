@@ -34,6 +34,14 @@ namespace Wivuu.JsonPolymorphism
             DiagnosticSeverity.Error,
             isEnabledByDefault: true);
 
+        static readonly DiagnosticDescriptor DiagTypeNotBeConcrete = new DiagnosticDescriptor(
+            id: "WIVUUJSONPOLY004",
+            title: "Type with discriminator must be abstract or interface",
+            messageFormat: "Type must not be concrete",
+            category: "WivuuJsonPolymorphism",
+            DiagnosticSeverity.Error,
+            isEnabledByDefault: true);
+
         static readonly string JsonDiscriminatorAttrText = new IndentedStringBuilder()
             .AppendLine("using System;")
             .AppendLine()
@@ -47,7 +55,7 @@ namespace Wivuu.JsonPolymorphism
         public void Initialize(GeneratorInitializationContext context)
         {
 #if DEBUG
-            //Debugger.Launch();
+            //System.Diagnostics.Debugger.Launch();
 #endif
 
             context.RegisterForSyntaxNotifications(() => new JsonDiscriminatorReceiver());
@@ -83,6 +91,15 @@ namespace Wivuu.JsonPolymorphism
                 if (symbol.ContainingType is not INamedTypeSymbol parentSymbol)
                     continue;
 
+                // Ensure that parent type is not concrete so that we do not cause stack overflow on serialize
+                if (!parentTypeNode.Modifiers.Any(SyntaxKind.AbstractKeyword) &&
+                     parentSymbol.TypeKind != TypeKind.Interface)
+                {
+                    context.ReportDiagnostic(
+                        Diagnostic.Create(DiagTypeNotBeConcrete, parentSymbol.Locations[0], parentSymbol.Name));
+                    continue;
+                }
+
                 // Ensure that parent type is partial so we can attach the JsonConverter attribute
                 if (!parentTypeNode.Modifiers.Any(SyntaxKind.PartialKeyword))
                 {
@@ -106,7 +123,7 @@ namespace Wivuu.JsonPolymorphism
                 }
 
                 // Get all possible enum values and corresponding types
-                var classMembers = new List<(string, INamedTypeSymbol)>(
+                var classMembers = new List<(string, INamedTypeSymbol, int)>(
                     GetCorrespondingTypes(context, compilation, parentSymbol, discriminatorType));
 
                 var sb = new IndentedStringBuilder();
@@ -172,7 +189,7 @@ namespace Wivuu.JsonPolymorphism
                                 using (sb.AppendLine("switch").Indent('{', endCh: "};"))
                                 {
                                     // Iterate through each member case
-                                    foreach (var (member, type) in classMembers)
+                                    foreach (var (member, type, _) in classMembers)
                                         sb.AppendLine($"{discriminatorType}.{member} => JsonSerializer.Deserialize<{type}>(")
                                           .AppendLine("    deserializedObj.GetRawText(), options")
                                           .AppendLine("),")
@@ -201,7 +218,7 @@ namespace Wivuu.JsonPolymorphism
                             var i = 0;
 
                             // Iterate through each member case
-                            foreach (var (_, className) in classMembers)
+                            foreach (var (_, className, _) in classMembers)
                             {
                                 ++i;
 
@@ -224,28 +241,37 @@ namespace Wivuu.JsonPolymorphism
             }
         }
 
-        static IEnumerable<(string name, INamedTypeSymbol match)> GetCorrespondingTypes(
+        static IEnumerable<(string name, INamedTypeSymbol match, int level)> GetCorrespondingTypes(
             GeneratorExecutionContext context, 
             Compilation compilation,
             INamedTypeSymbol parentSymbol,
             INamedTypeSymbol discriminatorEnum)
         {
+            var used = new HashSet<INamedTypeSymbol>(SymbolEqualityComparer.Default);
+
             foreach (var name in discriminatorEnum.MemberNames)
             {
                 // Get matching types in the context
-                var matches = compilation.GetSymbolsWithName(
-                    p => p.Contains(name),
-                    SymbolFilter.Type
-                );
+                var matches = compilation
+                    .GetSymbolsWithName(
+                        p => p.Contains(name),
+                        SymbolFilter.Type
+                    );
 
                 var any = false;
 
                 // Ensure type inherits from node
                 foreach (INamedTypeSymbol match in matches)
                 {
-                    if (match.BaseType?.Equals(parentSymbol, SymbolEqualityComparer.Default) is true)
+                    var level = GetIsBaseTypeAll(match, parentSymbol);
+
+                    if (level > 0)
                     {
-                        yield return (name, match);
+                        // Only allow symbol to match once
+                        if (!used.Add(match))
+                            continue;
+
+                        yield return (name, match, level);
                         any = true;
                         break;
                     }
@@ -258,6 +284,14 @@ namespace Wivuu.JsonPolymorphism
                 }
             }
         }
+
+        static int GetIsBaseTypeAll(INamedTypeSymbol match, INamedTypeSymbol of, int level = 0) =>
+            match switch
+            {
+                var m when m.Equals(of, SymbolEqualityComparer.Default) => level,
+                var m when m.BaseType is INamedTypeSymbol ty => GetIsBaseTypeAll(ty, of, level + 1),
+                _ => -1,
+            };
 
         static TypeDeclarationSyntax? GetParentDeclaration(SyntaxNode node) => 
             node.Parent switch
