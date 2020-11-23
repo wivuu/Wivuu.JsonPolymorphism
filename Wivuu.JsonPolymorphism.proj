@@ -1,7 +1,7 @@
 <Project>
 
     <PropertyGroup>
-        <VersionPrefix>0.0.1</VersionPrefix>
+        <VersionPrefix>1.0.0</VersionPrefix>
         <Authors>Erik O'Leary</Authors>
         <Company>Wivuu</Company>
         <Product>Wivuu JsonPolymorphism</Product>

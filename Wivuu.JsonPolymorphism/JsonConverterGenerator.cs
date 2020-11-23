@@ -55,7 +55,7 @@ namespace Wivuu.JsonPolymorphism
         public void Initialize(GeneratorInitializationContext context)
         {
 #if DEBUG
-            //System.Diagnostics.Debugger.Launch();
+            ///System.Diagnostics.Debugger.Launch();
 #endif
 
             context.RegisterForSyntaxNotifications(() => new JsonDiscriminatorReceiver());
@@ -125,6 +125,8 @@ namespace Wivuu.JsonPolymorphism
                 // Get all possible enum values and corresponding types
                 var classMembers = new List<(string, INamedTypeSymbol, int)>(
                     GetCorrespondingTypes(context, compilation, parentSymbol, discriminatorType));
+
+                classMembers.Sort(new SpecificityComparer());
 
                 var sb = new IndentedStringBuilder();
 
@@ -300,6 +302,14 @@ namespace Wivuu.JsonPolymorphism
                 not null => GetParentDeclaration(node.Parent),
                 _ => null
             };
+
+        class SpecificityComparer : IComparer<(string, INamedTypeSymbol, int level)>
+        {
+            public int Compare(
+                (string, INamedTypeSymbol, int level) x,
+                (string, INamedTypeSymbol, int level) y) => 
+                y.level.CompareTo(x.level);
+        }
     }
 
     class JsonDiscriminatorReceiver : ISyntaxReceiver

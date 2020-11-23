@@ -9,7 +9,7 @@ Easily add System.Text.Json serialization support for polymorphic models in C# /
 Since this project relies on Source Code Generation, this project can only be used with C# (not F#) projects targeting net5.0.
 
 ```sh
-dotnet add package Wivuu.JsonPolymorphism --prerelease
+dotnet add package Wivuu.JsonPolymorphism
 ```
 
 ## Usage

@@ -30,15 +30,14 @@ namespace Tests
         public override GeographyAreaType AreaType => GeographyAreaType.Area;
     }
 
-    public class GeographyCountyArea
+    public class GeographyCounty
         : GeographyArea
     {
         public override GeographyAreaType AreaType => GeographyAreaType.County;
     }
 
-
-    public class GeographyTractArea
-        : GeographyCountyArea
+    public class GeographyTract
+        : GeographyCounty
     {
         public override GeographyAreaType AreaType => GeographyAreaType.Tract;
     }
@@ -51,9 +50,9 @@ namespace Tests
         {
             var areas = new GeographyArea[] 
             {
-                new GeographyCountyArea { Prefix = "551" },
+                new GeographyCounty { Prefix = "551" },
                 new GeographyAreaArea { Prefix = "552" },
-                new GeographyTractArea { Prefix = "551442" },
+                new GeographyTract { Prefix = "551442" },
             };
 
             var serialized = JsonSerializer.Serialize(areas);
