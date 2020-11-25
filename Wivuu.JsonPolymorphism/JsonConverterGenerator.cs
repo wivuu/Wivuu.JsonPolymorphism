@@ -66,7 +66,7 @@ namespace Wivuu.JsonPolymorphism
         public void Initialize(GeneratorInitializationContext context)
         {
 #if DEBUG
-            //System.Diagnostics.Debugger.Launch();
+            System.Diagnostics.Debugger.Launch();
 #endif
             context.RegisterForSyntaxNotifications(() => new JsonDiscriminatorReceiver());
         }
@@ -373,10 +373,10 @@ namespace Wivuu.JsonPolymorphism
                 if (paramDecl.AttributeLists.Count != 0)
                     Candidates.Add(paramDecl);
             }
-            else if (syntaxNode is ClassDeclarationSyntax classDecl 
-                && classDecl.AttributeLists.Count != 0)
+            else if (syntaxNode is TypeDeclarationSyntax typeDecl)
             {
-                Fallbacks.Add(classDecl);
+                if (typeDecl.AttributeLists.Count != 0)
+                    Fallbacks.Add(typeDecl);
             }
         }
 
