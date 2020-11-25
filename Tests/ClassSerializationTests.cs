@@ -14,15 +14,18 @@ namespace Tests
         Area,
         County,
         Tract,
+        Some,
+        Silly,
+        Type,
+        Names,
     }
 
     public abstract partial class GeographyArea
     {
         [JsonDiscriminator]
-        public virtual GeographyAreaType AreaType { get; } = GeographyAreaType.Area;
+        public virtual GeographyAreaType AreaType { get; init; } = GeographyAreaType.Area;
         public string Prefix { get; init; } = "";
     }
-
 
     public class GeographyAreaArea
         : GeographyArea
@@ -42,6 +45,12 @@ namespace Tests
         public override GeographyAreaType AreaType => GeographyAreaType.Tract;
     }
 
+    [JsonDiscriminatorFallback]
+    public class GeographyOther
+        : GeographyArea
+    {
+        public override GeographyAreaType AreaType { get; init; }
+    }
 
     public class ClassSerializationTests
     {
@@ -53,6 +62,7 @@ namespace Tests
                 new GeographyCounty { Prefix = "551" },
                 new GeographyAreaArea { Prefix = "552" },
                 new GeographyTract { Prefix = "551442" },
+                new GeographyOther { Prefix = "551442", AreaType = GeographyAreaType.Some },
             };
 
             var serialized = JsonSerializer.Serialize(areas);

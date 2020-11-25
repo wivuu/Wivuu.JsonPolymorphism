@@ -42,29 +42,39 @@ namespace Wivuu.JsonPolymorphism
             DiagnosticSeverity.Error,
             isEnabledByDefault: true);
 
-        static readonly string JsonDiscriminatorAttrText = new IndentedStringBuilder()
+        static readonly DiagnosticDescriptor DiagOnlyOneFallback = new DiagnosticDescriptor(
+            id: "WIVUUJSONPOLY005",
+            title: "Type with discriminator can only have a single JsonDiscriminatorFallback",
+            messageFormat: "Type must have zero or one fallbacks",
+            category: "WivuuJsonPolymorphism",
+            DiagnosticSeverity.Error,
+            isEnabledByDefault: true);
+
+        static readonly string GeneratorAttributesText = new IndentedStringBuilder()
             .AppendLine("using System;")
             .AppendLine()
             .AppendLine("namespace System.Text.Json.Serialization")
             .Indent(    '{', sb => sb
                 .AppendLine("[AttributeUsage(AttributeTargets.Property | AttributeTargets.Parameter, Inherited = false, AllowMultiple = false)]")
                 .AppendLine("public class JsonDiscriminatorAttribute : Attribute { }")
+                .AppendLine()
+                .AppendLine("[AttributeUsage(AttributeTargets.Class | AttributeTargets.Parameter, Inherited = false, AllowMultiple = false)]")
+                .AppendLine("public class JsonDiscriminatorFallbackAttribute : Attribute { }")
             )
             .ToString();
 
         public void Initialize(GeneratorInitializationContext context)
         {
 #if DEBUG
-            ///System.Diagnostics.Debugger.Launch();
+            //System.Diagnostics.Debugger.Launch();
 #endif
-
             context.RegisterForSyntaxNotifications(() => new JsonDiscriminatorReceiver());
         }
 
         public void Execute(GeneratorExecutionContext context)
         {
-            var jsonAttributeSource = SourceText.From(JsonDiscriminatorAttrText, Encoding.UTF8);
-            context.AddSource("JsonDiscriminatorAttribute.cs", jsonAttributeSource);
+            var jsonAttributeSource = SourceText.From(GeneratorAttributesText, Encoding.UTF8);
+            context.AddSource("JsonDiscriminatorAttributes.cs", jsonAttributeSource);
 
             // Retreive the populated receiver 
             if (context.SyntaxReceiver is not JsonDiscriminatorReceiver receiver ||
@@ -96,7 +106,7 @@ namespace Wivuu.JsonPolymorphism
                      parentSymbol.TypeKind != TypeKind.Interface)
                 {
                     context.ReportDiagnostic(
-                        Diagnostic.Create(DiagTypeNotBeConcrete, parentSymbol.Locations[0], parentSymbol.Name));
+                        Diagnostic.Create(DiagTypeNotBeConcrete, parentSymbol.Locations[0]));
                     continue;
                 }
 
@@ -122,9 +132,20 @@ namespace Wivuu.JsonPolymorphism
                     continue;
                 }
 
+                // Retrieve fallback attributes for the parent type
+                var fallbacks = new List<(CSharpSyntaxNode, ISymbol)>(receiver.GetFallbacks(compilation, parentSymbol));
+
+                if (fallbacks.Count > 1)
+                {
+                    foreach (var (_, fbSymbol) in fallbacks)
+                        context.ReportDiagnostic(
+                            Diagnostic.Create(DiagOnlyOneFallback, fbSymbol.Locations[0]));
+                    continue;
+                }
+
                 // Get all possible enum values and corresponding types
                 var classMembers = new List<(string, INamedTypeSymbol, int)>(
-                    GetCorrespondingTypes(context, compilation, parentSymbol, discriminatorType));
+                    GetCorrespondingTypes(context, compilation, parentSymbol, discriminatorType, fallbacks.Count == 1));
 
                 classMembers.Sort(new SpecificityComparer());
 
@@ -198,7 +219,16 @@ namespace Wivuu.JsonPolymorphism
                                           .AppendLine()
                                           ;
 
-                                    sb.AppendLine("_ => default");
+                                    if (fallbacks.Count == 1 && fallbacks[0] is var (_, fbSymbol))
+                                    {
+                                        sb.AppendLine($"_ => JsonSerializer.Deserialize<{fbSymbol.Name}>(")
+                                          .AppendLine("    deserializedObj.GetRawText(), options")
+                                          .AppendLine("),")
+                                          .AppendLine()
+                                          ;
+                                    }
+                                    else
+                                        sb.AppendLine("_ => default");
                                 }
                             }
 
@@ -233,7 +263,20 @@ namespace Wivuu.JsonPolymorphism
                             }
 
                             using (sb.AppendLine($"default:").Indent())
-                                sb.AppendLine($"throw new JsonException($\"{{value.{symbol.MetadataName}}} is not a supported value\");");
+                                if (fallbacks.Count == 1 && fallbacks[0] is var (_, fbSymbol))
+                                {
+                                    ++i;
+
+                                    sb.AppendLine($"if (value is {fbSymbol.Name} value{i})").Indent('{', sb =>
+                                        sb.AppendLine($"JsonSerializer.Serialize(writer, value{i}, options);")
+                                          .AppendLine("break;")
+                                       )
+                                      .AppendLine("else")
+                                      .AppendLine($"    throw new JsonException($\"{{value.{symbol.MetadataName}}} is not a supported value\");");
+                                      ;
+                                }
+                                else
+                                    sb.AppendLine($"throw new JsonException($\"{{value.{symbol.MetadataName}}} is not a supported value\");");
                         }
                     }
                 }
@@ -247,7 +290,8 @@ namespace Wivuu.JsonPolymorphism
             GeneratorExecutionContext context, 
             Compilation compilation,
             INamedTypeSymbol parentSymbol,
-            INamedTypeSymbol discriminatorEnum)
+            INamedTypeSymbol discriminatorEnum,
+            bool hasFallback)
         {
             var used = new HashSet<INamedTypeSymbol>(SymbolEqualityComparer.Default);
 
@@ -279,7 +323,7 @@ namespace Wivuu.JsonPolymorphism
                     }
                 }
 
-                if (!any)
+                if (!any && !hasFallback)
                 {
                     context.ReportDiagnostic(
                         Diagnostic.Create(DiagNoCorrespondingType, discriminatorEnum.Locations[0], name));
@@ -287,7 +331,7 @@ namespace Wivuu.JsonPolymorphism
             }
         }
 
-        static int GetIsBaseTypeAll(INamedTypeSymbol match, INamedTypeSymbol of, int level = 0) =>
+        internal static int GetIsBaseTypeAll(INamedTypeSymbol match, INamedTypeSymbol of, int level = 0) =>
             match switch
             {
                 var m when m.Equals(of, SymbolEqualityComparer.Default) => level,
@@ -295,7 +339,7 @@ namespace Wivuu.JsonPolymorphism
                 _ => -1,
             };
 
-        static TypeDeclarationSyntax? GetParentDeclaration(SyntaxNode node) => 
+        internal static TypeDeclarationSyntax? GetParentDeclaration(SyntaxNode node) => 
             node.Parent switch
             {
                 TypeDeclarationSyntax type => type,
@@ -303,7 +347,7 @@ namespace Wivuu.JsonPolymorphism
                 _ => null
             };
 
-        class SpecificityComparer : IComparer<(string, INamedTypeSymbol, int level)>
+        internal class SpecificityComparer : IComparer<(string, INamedTypeSymbol, int level)>
         {
             public int Compare(
                 (string, INamedTypeSymbol, int level) x,
@@ -315,6 +359,7 @@ namespace Wivuu.JsonPolymorphism
     class JsonDiscriminatorReceiver : ISyntaxReceiver
     {
         public List<CSharpSyntaxNode> Candidates { get; } = new();
+        public List<CSharpSyntaxNode> Fallbacks { get; } = new();
 
         public void OnVisitSyntaxNode(SyntaxNode syntaxNode)
         {
@@ -328,6 +373,11 @@ namespace Wivuu.JsonPolymorphism
                 if (paramDecl.AttributeLists.Count != 0)
                     Candidates.Add(paramDecl);
             }
+            else if (syntaxNode is ClassDeclarationSyntax classDecl 
+                && classDecl.AttributeLists.Count != 0)
+            {
+                Fallbacks.Add(classDecl);
+            }
         }
 
         /// <summary>
@@ -335,7 +385,6 @@ namespace Wivuu.JsonPolymorphism
         /// </summary>
         public IEnumerable<(CSharpSyntaxNode node, ISymbol symbol)> GetDiscriminators(Compilation compilation)
         {
-            // get the newly bound attribute, and INotifyPropertyChanged
             var attributeSymbol = compilation.GetTypeByMetadataName("System.Text.Json.Serialization.JsonDiscriminatorAttribute");
 
             // Find all discriminators
@@ -351,6 +400,35 @@ namespace Wivuu.JsonPolymorphism
                 {
                     if (attr.AttributeClass?.Equals(attributeSymbol, SymbolEqualityComparer.Default) is true)
                         yield return (node, symbol);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Retrieve all the fallbacks from the execution context
+        /// </summary>
+        public IEnumerable<(CSharpSyntaxNode node, ISymbol symbol)> GetFallbacks(Compilation compilation, INamedTypeSymbol parentSymbol)
+        {
+            var attributeSymbol = compilation.GetTypeByMetadataName("System.Text.Json.Serialization.JsonDiscriminatorFallbackAttribute");
+
+            // Find all fallbacks
+            for (var i = 0; i < Fallbacks.Count; ++i)
+            {
+                var node  = Fallbacks[i];
+                var model = compilation.GetSemanticModel(node.SyntaxTree);
+
+                if (model.GetDeclaredSymbol(node) is not INamedTypeSymbol symbol)
+                    continue;
+
+                foreach (var attr in symbol.GetAttributes())
+                {
+                    if (attr.AttributeClass?.Equals(attributeSymbol, SymbolEqualityComparer.Default) is true)
+                    {
+                        var level = JsonConverterGenerator.GetIsBaseTypeAll(symbol, parentSymbol);
+
+                        if (level > 0)
+                            yield return (node, symbol);
+                    }
                 }
             }
         }
