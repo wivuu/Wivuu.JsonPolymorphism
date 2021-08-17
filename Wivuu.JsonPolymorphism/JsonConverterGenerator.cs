@@ -74,7 +74,7 @@ namespace Wivuu.JsonPolymorphism
         public void Execute(GeneratorExecutionContext context)
         {
             var jsonAttributeSource = SourceText.From(GeneratorAttributesText, Encoding.UTF8);
-            context.AddSource("JsonDiscriminatorAttributes.cs", jsonAttributeSource);
+            context.AddSource("JsonDiscriminatorAttributes.g.cs", jsonAttributeSource);
 
             // Retreive the populated receiver 
             if (context.SyntaxReceiver is not JsonDiscriminatorReceiver receiver ||
@@ -282,7 +282,7 @@ namespace Wivuu.JsonPolymorphism
                 }
 
                 // Add source
-                context.AddSource($"{parentSymbol.Name}Converter.cs", SourceText.From(sb.ToString(), Encoding.UTF8));
+                context.AddSource($"{parentSymbol.Name}Converter.g.cs", SourceText.From(sb.ToString(), Encoding.UTF8));
             }
         }
 
