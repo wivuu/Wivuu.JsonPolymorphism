@@ -153,6 +153,7 @@ namespace Wivuu.JsonPolymorphism
 
                 sb.AppendLine("#nullable enable")
                   .AppendLine("using System;")
+                  .AppendLine("using System.Runtime.Serialization;")
                   .AppendLine("using System.Text.Json;")
                   .AppendLine("using System.Text.Json.Serialization;")
                   .AppendLine()
@@ -162,6 +163,10 @@ namespace Wivuu.JsonPolymorphism
 
                 using (sb.AppendLine($"namespace {ns.ToDisplayString()}").Indent('{'))
                 {
+                    // Append known types
+                    foreach (var (_,className,_) in classMembers)
+                        sb.AppendLine($"[KnownType(typeof({className.Name}))]");
+
                     // Attribute adding class
                     sb.AppendLine($"[JsonConverter(typeof({parentSymbol.Name}Converter))]")
                       .AppendLine($"{parentTypeNode.Modifiers} {parentTypeNode.Keyword.Text} {parentSymbol.Name} {{ }}")
