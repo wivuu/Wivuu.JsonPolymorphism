@@ -65,6 +65,9 @@ namespace Tests
                 new GeographyOther { Prefix = "551442", AreaType = GeographyAreaType.Some },
             };
 
+            var areaTy = GeographyArea.GetType(GeographyAreaType.County);
+            Assert.Equal(areaTy, typeof(GeographyCounty));
+
             var serialized = JsonSerializer.Serialize(areas);
 
             // Deserialized

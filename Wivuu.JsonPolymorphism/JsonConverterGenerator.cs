@@ -168,10 +168,25 @@ namespace Wivuu.JsonPolymorphism
                         sb.AppendLine($"[KnownType(typeof({className.Name}))]");
 
                     // Attribute adding class
-                    sb.AppendLine($"[JsonConverter(typeof({parentSymbol.Name}Converter))]")
-                      .AppendLine($"{parentTypeNode.Modifiers} {parentTypeNode.Keyword.Text} {parentSymbol.Name} {{ }}")
-                      .AppendLine()
-                      ;
+                    sb.AppendLine($"[JsonConverter(typeof({parentSymbol.Name}Converter))]");
+                    using (sb.AppendLine($"{parentTypeNode.Modifiers} {parentTypeNode.Keyword.Text} {parentSymbol.Name}").Indent('{'))
+                    {
+                        // Add static method to get type from discriminator
+                        using (sb.AppendLine($"public static Type? GetType({discriminatorType} kind)").Indent('{'))
+                        {
+                            using (sb.AppendLine($"return kind switch").Indent('{', endCh: "};"))
+                            {
+                                // Iterate through each member case
+                                foreach (var (member, type, _) in classMembers)
+                                    sb.AppendLine($"{discriminatorType}.{member} => typeof({type}),");
+
+                                if (fallbacks.Count == 1 && fallbacks[0] is var (_, fbSymbol))
+                                    sb.AppendLine($"_ => typeof({fbSymbol.Name})");
+                                else
+                                    sb.AppendLine("_ => default");
+                            }
+                        }
+                    }
 
                     // Converter class
                     var visibility =

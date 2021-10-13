@@ -1,13 +1,13 @@
 <Project>
 
     <PropertyGroup>
-        <VersionPrefix>1.0.4</VersionPrefix>
+        <VersionPrefix>1.0.5</VersionPrefix>
         <Authors>Erik O'Leary</Authors>
         <Company>Wivuu</Company>
         <Product>Wivuu JsonPolymorphism</Product>
         <Description>Adds System.Text.Json serializer support for polymorphism with a discriminator attribute.</Description>
         <ReleaseNotes>
-        - Generate [KnownType] attributes for all derived classes
+        - Create static 'GetType' method to retrieve the type of the object based on the input 'kind' argument
         </ReleaseNotes>
         <PackageTags>net5;json;serialize;polymorphism</PackageTags>
         <PackageProjectUrl>https://github.com/wivuu/Wivuu.JsonPolymorphism</PackageProjectUrl>
