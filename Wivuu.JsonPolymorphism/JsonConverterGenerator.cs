@@ -10,6 +10,10 @@ namespace Wivuu.JsonPolymorphism
     [Generator]
     class JsonConverterGenerator : ISourceGenerator
     {
+        static object[] items = {
+
+        };
+
         static readonly DiagnosticDescriptor DiagNotPartial = new DiagnosticDescriptor(
             id: "WIVUUJSONPOLY001",
             title: "Type with discriminator must be marked 'partial'",
@@ -171,6 +175,20 @@ namespace Wivuu.JsonPolymorphism
                     sb.AppendLine($"[JsonConverter(typeof({parentSymbol.Name}Converter))]");
                     using (sb.AppendLine($"{parentTypeNode.Modifiers} {parentTypeNode.Keyword.Text} {parentSymbol.Name}").Indent('{'))
                     {
+                        // Add static array to house all types
+                        using (sb.AppendLine($"private static readonly Type[] _allTypes = ").Indent('{', endCh: "};"))
+                        {
+                            // Iterate through each member case
+                            foreach (var (_, type, _) in classMembers)
+                                sb.AppendLine($"typeof({type}),");
+                        }
+
+                        // Add static method to get all types
+                        using (sb.AppendLine($"public static Type[] GetAllTypes()").Indent('{'))
+                        {
+                            sb.AppendLine("return _allTypes;");
+                        }
+
                         // Add static method to get type from discriminator
                         using (sb.AppendLine($"public static Type? GetType({discriminatorType} kind)").Indent('{'))
                         {
