@@ -229,39 +229,26 @@ namespace Wivuu.JsonPolymorphism
                             var ident      = symbol.MetadataName;
                             var camelIdent = string.Concat(char.ToLowerInvariant(ident[0]), ident.Substring(1));
 
-                            sb.AppendLine("var deserializedObj = JsonSerializer.Deserialize<JsonElement>(ref reader, options);")
+                            sb.AppendLine("var deserializedObj = JsonElement.ParseValue(ref reader);")
                               .AppendLine("var discriminator   = options.PropertyNamingPolicy == JsonNamingPolicy.CamelCase")
                               .AppendLine($"    ? \"{camelIdent}\" : \"{ident}\";")
                               .AppendLine()
                               ;
 
                             using (sb.AppendLine("if (deserializedObj.TryGetProperty(discriminator, out var property))").Indent('{'))
-                            using (sb.AppendLine("return property.ValueKind").Indent())
+                            using (sb.AppendLine($"return property.Deserialize<{discriminatorType}>(options)").Indent())
                             {
-                                using (sb.AppendLine("switch").Indent('{'))
-                                    sb.AppendLine($"JsonValueKind.String => Enum.TryParse<{discriminatorType}>(property.GetString(), out var stringKind) ?")
-                                      .AppendLine($"    stringKind : throw new JsonException($\"Cant convert value {{property.GetRawText()}} to {discriminatorType.Name}\"),")
-                                      .AppendLine()
-                                      .AppendLine($"JsonValueKind.Number => ({discriminatorType})property.GetInt32(),")
-                                      .AppendLine()
-                                      .AppendLine($"_ => throw new JsonException($\"Cant convert value {{property.GetRawText()}} to {discriminatorType.Name}\")")
-                                      ;
-
                                 using (sb.AppendLine("switch").Indent('{', endCh: "};"))
                                 {
                                     // Iterate through each member case
                                     foreach (var (member, type, _) in classMembers)
-                                        sb.AppendLine($"{discriminatorType}.{member} => JsonSerializer.Deserialize<{type}>(")
-                                          .AppendLine("    deserializedObj.GetRawText(), options")
-                                          .AppendLine("),")
+                                        sb.AppendLine($"{discriminatorType}.{member} => deserializedObj.Deserialize<{type}>(options),")
                                           .AppendLine()
                                           ;
 
                                     if (fallbacks.Count == 1 && fallbacks[0] is var (_, fbSymbol))
                                     {
-                                        sb.AppendLine($"_ => JsonSerializer.Deserialize<{fbSymbol.Name}>(")
-                                          .AppendLine("    deserializedObj.GetRawText(), options")
-                                          .AppendLine("),")
+                                        sb.AppendLine($"_ => deserializedObj.Deserialize<{fbSymbol.Name}>(options),")
                                           .AppendLine()
                                           ;
                                     }

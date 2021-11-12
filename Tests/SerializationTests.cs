@@ -45,6 +45,10 @@ namespace Tests
             };
 
             var serialized          = JsonSerializer.Serialize(animals, options);
+            
+            // Change case of 'dog' to no longer match enum
+            serialized = serialized.Replace("Dog", "dog");
+            
             var animalsDeserialized = JsonSerializer.Deserialize<Animal[]>(serialized, options);
             
             if (animalsDeserialized is null)
