@@ -225,7 +225,6 @@ namespace Wivuu.JsonPolymorphism
 
                         using (sb.Indent('{'))
                         {
-                            // TODO: Determine better way to find in case insensitive way
                             var ident      = symbol.MetadataName;
                             var camelIdent = string.Concat(char.ToLowerInvariant(ident[0]), ident.Substring(1));
 
@@ -236,37 +235,50 @@ namespace Wivuu.JsonPolymorphism
                               ;
 
                             using (sb.AppendLine("if (deserializedObj.TryGetProperty(discriminator, out var property))").Indent('{'))
-                            using (sb.AppendLine("return property.ValueKind").Indent())
                             {
-                                using (sb.AppendLine("switch").Indent('{'))
-                                    sb.AppendLine($"JsonValueKind.String => Enum.TryParse<{discriminatorType}>(property.GetString(), out var stringKind) ?")
-                                      .AppendLine($"    stringKind : throw new JsonException($\"Cant convert value {{property.GetRawText()}} to {discriminatorType.Name}\"),")
-                                      .AppendLine()
-                                      .AppendLine($"JsonValueKind.Number => ({discriminatorType})property.GetInt32(),")
-                                      .AppendLine()
-                                      .AppendLine($"_ => throw new JsonException($\"Cant convert value {{property.GetRawText()}} to {discriminatorType.Name}\")")
-                                      ;
+                                sb.AppendLine($"var toConvert = typeof({discriminatorType});");
+                                sb.AppendLine("var enumReader = new Utf8JsonReader(System.Text.Encoding.UTF8.GetBytes(property.GetRawText()));");
+                                sb.AppendLine("enumReader.Read();");
 
-                                using (sb.AppendLine("switch").Indent('{', endCh: "};"))
+                                using (sb.AppendLine($"var type = options.GetConverter(toConvert) is JsonConverter<{discriminatorType}> converter").Indent())
                                 {
-                                    // Iterate through each member case
-                                    foreach (var (member, type, _) in classMembers)
-                                        sb.AppendLine($"{discriminatorType}.{member} => JsonSerializer.Deserialize<{type}>(")
-                                          .AppendLine("    deserializedObj.GetRawText(), options")
-                                          .AppendLine("),")
+                                    sb.AppendLine("? converter.Read(ref enumReader, toConvert, options)")
+                                        // Fallback to the old behaviour if no enum converter is found
+                                        .AppendLine(": property.ValueKind")
+                                      ;
+                                    using (sb.AppendLine("switch").Indent('{', endCh: "};"))
+                                        sb.AppendLine($"JsonValueKind.String => Enum.TryParse<{discriminatorType}>(property.GetString(), out var stringKind) ?")
+                                          .AppendLine($"    stringKind : throw new JsonException($\"Cant convert value {{property.GetRawText()}} to {discriminatorType.Name}\"),")
                                           .AppendLine()
+                                          .AppendLine($"JsonValueKind.Number => ({discriminatorType})property.GetInt32(),")
+                                          .AppendLine()
+                                          .AppendLine($"_ => throw new JsonException($\"Cant convert value {{property.GetRawText()}} to {discriminatorType.Name}\")")
                                           ;
+                                }
 
-                                    if (fallbacks.Count == 1 && fallbacks[0] is var (_, fbSymbol))
+                                using (sb.AppendLine("return type").Indent())
+                                {
+                                    using (sb.AppendLine("switch").Indent('{', endCh: "};"))
                                     {
-                                        sb.AppendLine($"_ => JsonSerializer.Deserialize<{fbSymbol.Name}>(")
-                                          .AppendLine("    deserializedObj.GetRawText(), options")
-                                          .AppendLine("),")
-                                          .AppendLine()
-                                          ;
+                                        // Iterate through each member case
+                                        foreach (var (member, type, _) in classMembers)
+                                            sb.AppendLine($"{discriminatorType}.{member} => JsonSerializer.Deserialize<{type}>(")
+                                                .AppendLine("    deserializedObj.GetRawText(), options")
+                                                .AppendLine("),")
+                                                .AppendLine()
+                                                ;
+
+                                        if (fallbacks.Count == 1 && fallbacks[0] is var (_, fbSymbol))
+                                        {
+                                            sb.AppendLine($"_ => JsonSerializer.Deserialize<{fbSymbol.Name}>(")
+                                                .AppendLine("    deserializedObj.GetRawText(), options")
+                                                .AppendLine("),")
+                                                .AppendLine()
+                                                ;
+                                        }
+                                        else
+                                            sb.AppendLine("_ => default");
                                     }
-                                    else
-                                        sb.AppendLine("_ => default");
                                 }
                             }
 
