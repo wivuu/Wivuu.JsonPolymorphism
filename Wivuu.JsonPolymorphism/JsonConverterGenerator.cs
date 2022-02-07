@@ -60,10 +60,10 @@ namespace Wivuu.JsonPolymorphism
             .AppendLine("namespace System.Text.Json.Serialization")
             .Indent(    '{', sb => sb
                 .AppendLine("[AttributeUsage(AttributeTargets.Property | AttributeTargets.Parameter, Inherited = false, AllowMultiple = false)]")
-                .AppendLine("public class JsonDiscriminatorAttribute : Attribute { }")
+                .AppendLine("internal class JsonDiscriminatorAttribute : Attribute { }")
                 .AppendLine()
                 .AppendLine("[AttributeUsage(AttributeTargets.Class | AttributeTargets.Parameter, Inherited = false, AllowMultiple = false)]")
-                .AppendLine("public class JsonDiscriminatorFallbackAttribute : Attribute { }")
+                .AppendLine("internal class JsonDiscriminatorFallbackAttribute : Attribute { }")
             )
             .ToString();
 
