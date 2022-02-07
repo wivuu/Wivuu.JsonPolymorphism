@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -79,7 +78,7 @@ namespace Wivuu.JsonPolymorphism
         public void Execute(GeneratorExecutionContext context)
         {
             var jsonAttributeSource = SourceText.From(GeneratorAttributesText, Encoding.UTF8);
-            context.AddSource($"{context.Compilation.AssemblyName}.JsonDiscriminatorAttributes.g.cs", jsonAttributeSource);
+            context.AddSource("JsonDiscriminatorAttributes.g.cs", jsonAttributeSource);
 
             // Retreive the populated receiver 
             if (context.SyntaxReceiver is not JsonDiscriminatorReceiver receiver ||

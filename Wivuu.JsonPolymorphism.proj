@@ -1,13 +1,15 @@
 <Project>
 
     <PropertyGroup>
-        <VersionPrefix>1.0.8</VersionPrefix>
+        <VersionPrefix>1.0.7</VersionPrefix>
         <Authors>Erik O'Leary</Authors>
         <Company>Wivuu</Company>
         <Product>Wivuu JsonPolymorphism</Product>
         <Description>Adds System.Text.Json serializer support for polymorphism with a discriminator attribute.</Description>
         <ReleaseNotes>
-        - Generat a unique .g.cs name for each context instance
+        - Upgrade to System.Text.Json v6
+        - Support custom JsonConverters on Enum Discriminator types
+        - Internally uses new JsonElement.Deserialize() rather than JsonSerializer.Parse(JsonElement.RawText)
         </ReleaseNotes>
         <PackageTags>net6;net5;json;serialize;polymorphism</PackageTags>
         <PackageProjectUrl>https://github.com/wivuu/Wivuu.JsonPolymorphism</PackageProjectUrl>
