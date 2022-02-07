@@ -184,10 +184,16 @@ namespace Wivuu.JsonPolymorphism
                         }
 
                         // Add static method to get all types
-                        using (sb.AppendLine($"public static Type[] GetAllTypes()").Indent('{'))
+                        sb.AppendLine($"/// <summary>")
+                          .AppendLine($"/// Gets all types that are known to the <see cref=\"{parentSymbol.Name}\"/> converter.")
+                          .AppendLine($"/// </summary>")
+                          .AppendLine($"/// <returns>All types that are known to the <see cref=\"{parentSymbol.Name}\"/> converter.</returns>")
+                          .AppendLine("#pragma warning disable CS0109");
+                        using (sb.AppendLine($"public static new Type[] GetAllTypes()").Indent('{'))
                         {
                             sb.AppendLine("return _allTypes;");
                         }
+                        sb.AppendLine("#pragma warning restore CS0109");
 
                         // Add static method to get type from discriminator
                         using (sb.AppendLine($"public static Type? GetType({discriminatorType} kind)").Indent('{'))

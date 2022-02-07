@@ -66,7 +66,10 @@ namespace Tests
             };
 
             var areaTy = GeographyArea.GetType(GeographyAreaType.County);
-            Assert.Equal(areaTy, typeof(GeographyCounty));
+            Assert.Equal(typeof(GeographyCounty), areaTy);
+
+            var allTypes = GeographyArea.GetAllTypes();
+            Assert.Equal(3, allTypes.Length);
 
             var serialized = JsonSerializer.Serialize(areas);
 
