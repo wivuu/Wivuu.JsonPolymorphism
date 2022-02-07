@@ -326,8 +326,15 @@ namespace Wivuu.JsonPolymorphism
         {
             var used = new HashSet<INamedTypeSymbol>(SymbolEqualityComparer.Default);
 
-            foreach (var name in discriminatorEnum.MemberNames)
+            foreach (var member in discriminatorEnum.GetMembers())
             {
+                if (member is not IFieldSymbol field)
+                    continue;
+
+                if (field.ConstantValue is null)
+                    continue;
+
+                var name = member.Name;
                 // Get matching types in the context
                 var matches = compilation
                     .GetSymbolsWithName(
