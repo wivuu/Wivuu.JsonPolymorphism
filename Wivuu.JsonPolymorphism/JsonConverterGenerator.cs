@@ -96,6 +96,30 @@ namespace Wivuu.JsonPolymorphism
             // Retrieve enum type
             var enumType = compilation.GetTypeByMetadataName(typeof(System.Enum).FullName);
 
+            // Define 'fake' json converter attribute
+            {
+                var sb = new IndentedStringBuilder()
+                    .AppendLine("using System;")
+                    .AppendLine("using System.Runtime.Serialization;")
+                    .AppendLine("using System.Text.Json;")
+                    .AppendLine("using System.Text.Json.Serialization;")
+                    .AppendLine()
+                    ;
+
+                using (sb.AppendLine($"namespace Wivuu.Polymorphism").Indent('{'))
+                {
+                    using (sb.AppendLine("public abstract class JsonInheritanceConverter<T> : JsonConverter<T>").Indent('{'))
+                    {
+                        sb.AppendLine("public abstract string DiscriminatorName { get; }")
+                          .AppendLine("public override abstract T Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options);")
+                          .AppendLine("public override abstract void Write(Utf8JsonWriter writer, T value, JsonSerializerOptions options);")
+                          ;
+                    }
+                }
+
+                context.AddSource($"JsonInheritanceConverter.g.cs", SourceText.From(sb.ToString(), Encoding.UTF8));
+            }
+
             // Create JsonConverters
             foreach (var (node, symbol) in receiver.GetDiscriminators(compilation))
             {
@@ -220,13 +244,13 @@ namespace Wivuu.JsonPolymorphism
                         parentTypeNode.Modifiers.Any(SyntaxKind.PublicKeyword)    ? "public "    :
                         "";
 
-                    using (sb.AppendLine($"{visibility}class {parentSymbol.Name}Converter : JsonConverter<{parentSymbol.Name}>").Indent('{'))
+                    using (sb.AppendLine($"{visibility}class {parentSymbol.Name}Converter : Wivuu.Polymorphism.JsonInheritanceConverter<{parentSymbol.Name}>").Indent('{'))
                     {
                         // DiscriminatorName property
                         sb.AppendLine($"/// <summary>")
                           .AppendLine($"/// Gets the name of the discriminator property.")
                           .AppendLine($"/// </summary>")
-                          .AppendLine($"public string DiscriminatorName => \"{symbol.MetadataName}\";")
+                          .AppendLine($"public override string DiscriminatorName => \"{symbol.MetadataName}\";")
                           .AppendLine()
                           ;
 
