@@ -99,6 +99,7 @@ namespace Wivuu.JsonPolymorphism
             // Define 'fake' json converter attribute
             {
                 var sb = new IndentedStringBuilder()
+                    .AppendLine("#nullable enable")
                     .AppendLine("using System;")
                     .AppendLine("using System.Runtime.Serialization;")
                     .AppendLine("using System.Text.Json;")
@@ -111,7 +112,7 @@ namespace Wivuu.JsonPolymorphism
                     using (sb.AppendLine("public abstract class JsonInheritanceConverter<T> : JsonConverter<T>").Indent('{'))
                     {
                         sb.AppendLine("public abstract string DiscriminatorName { get; }")
-                          .AppendLine("public override abstract T Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options);")
+                          .AppendLine("public override abstract T? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options);")
                           .AppendLine("public override abstract void Write(Utf8JsonWriter writer, T value, JsonSerializerOptions options);")
                           ;
                     }
