@@ -109,7 +109,7 @@ namespace Wivuu.JsonPolymorphism
 
                 using (sb.AppendLine($"namespace Wivuu.Polymorphism").Indent('{'))
                 {
-                    using (sb.AppendLine("public abstract class JsonInheritanceConverter<T> : JsonConverter<T>").Indent('{'))
+                    using (sb.AppendLine("internal abstract class JsonInheritanceConverter<T> : JsonConverter<T>").Indent('{'))
                     {
                         sb.AppendLine("public abstract string DiscriminatorName { get; }")
                           .AppendLine("public override abstract T? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options);")
@@ -238,14 +238,7 @@ namespace Wivuu.JsonPolymorphism
                     }
 
                     // Converter class
-                    var visibility =
-                        parentTypeNode.Modifiers.Any(SyntaxKind.InternalKeyword)  ? "internal "  :
-                        parentTypeNode.Modifiers.Any(SyntaxKind.ProtectedKeyword) ? "protected " :
-                        parentTypeNode.Modifiers.Any(SyntaxKind.PrivateKeyword)   ? "private "   :
-                        parentTypeNode.Modifiers.Any(SyntaxKind.PublicKeyword)    ? "public "    :
-                        "";
-
-                    using (sb.AppendLine($"{visibility}class {parentSymbol.Name}Converter : Wivuu.Polymorphism.JsonInheritanceConverter<{parentSymbol.Name}>").Indent('{'))
+                    using (sb.AppendLine($"internal class {parentSymbol.Name}Converter : Wivuu.Polymorphism.JsonInheritanceConverter<{parentSymbol.Name}>").Indent('{'))
                     {
                         // DiscriminatorName property
                         sb.AppendLine($"/// <summary>")
