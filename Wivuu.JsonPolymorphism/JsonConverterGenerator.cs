@@ -222,6 +222,14 @@ namespace Wivuu.JsonPolymorphism
 
                     using (sb.AppendLine($"{visibility}class {parentSymbol.Name}Converter : JsonConverter<{parentSymbol.Name}>").Indent('{'))
                     {
+                        // DiscriminatorName property
+                        sb.AppendLine($"/// <summary>")
+                          .AppendLine($"/// Gets the name of the discriminator property.")
+                          .AppendLine($"/// </summary>")
+                          .AppendLine($"public string DiscriminatorName => \"{symbol.MetadataName}\";")
+                          .AppendLine()
+                          ;
+
                         // Read Method
                         using (sb.AppendLine($"public override {parentSymbol.Name}? Read").Indent('('))
                             sb.AppendLine("ref Utf8JsonReader reader,")
