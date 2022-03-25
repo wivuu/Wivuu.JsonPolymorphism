@@ -10,7 +10,7 @@ public enum PostType
     Reply,
 }
 
-public abstract partial record Post([JsonDiscriminator] PostType type)
+public abstract partial record Post([JsonDiscriminator("type")] PostType Type)
 {
     public Guid Id { get; internal set; } = Guid.NewGuid();
 }

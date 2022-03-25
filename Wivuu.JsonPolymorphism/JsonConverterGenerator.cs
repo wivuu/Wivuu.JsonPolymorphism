@@ -60,7 +60,12 @@ namespace Wivuu.JsonPolymorphism
             .AppendLine("namespace System.Text.Json.Serialization")
             .Indent(    '{', sb => sb
                 .AppendLine("[AttributeUsage(AttributeTargets.Property | AttributeTargets.Parameter, Inherited = false, AllowMultiple = false)]")
-                .AppendLine("internal class JsonDiscriminatorAttribute : Attribute { }")
+                .AppendLine("internal class JsonDiscriminatorAttribute : Attribute {")
+                .AppendLine("    private string DiscriminatorName { get; }")
+                .AppendLine("    public JsonDiscriminatorAttribute(string discriminatorName = null) {")
+                .AppendLine("        DiscriminatorName = discriminatorName;")
+                .AppendLine("    }")
+                .AppendLine("}")
                 .AppendLine()
                 .AppendLine("[AttributeUsage(AttributeTargets.Class | AttributeTargets.Parameter, Inherited = false, AllowMultiple = false)]")
                 .AppendLine("internal class JsonDiscriminatorFallbackAttribute : Attribute { }")
@@ -69,9 +74,9 @@ namespace Wivuu.JsonPolymorphism
 
         public void Initialize(GeneratorInitializationContext context)
         {
-// #if DEBUG
-//             System.Diagnostics.Debugger.Launch();
-// #endif
+#if DEBUG
+            System.Diagnostics.Debugger.Launch();
+#endif
             context.RegisterForSyntaxNotifications(() => new JsonDiscriminatorReceiver());
         }
 
@@ -122,7 +127,7 @@ namespace Wivuu.JsonPolymorphism
             }
 
             // Create JsonConverters
-            foreach (var (node, symbol) in receiver.GetDiscriminators(compilation))
+            foreach (var (attr, node, symbol) in receiver.GetDiscriminators(compilation))
             {
                 if (GetParentDeclaration(node) is not TypeDeclarationSyntax parentTypeNode)
                     continue;
@@ -240,11 +245,15 @@ namespace Wivuu.JsonPolymorphism
                     // Converter class
                     using (sb.AppendLine($"internal class {parentSymbol.Name}Converter : Wivuu.Polymorphism.JsonInheritanceConverter<{parentSymbol.Name}>").Indent('{'))
                     {
+                        var renderedName = attr?.ConstructorArguments.Length is > 0 
+                            ? attr.ConstructorArguments[0].Value?.ToString() 
+                            : null;
+
                         // DiscriminatorName property
                         sb.AppendLine($"/// <summary>")
                           .AppendLine($"/// Gets the name of the discriminator property.")
                           .AppendLine($"/// </summary>")
-                          .AppendLine($"public override string DiscriminatorName => \"{symbol.MetadataName}\";")
+                          .AppendLine($"public override string DiscriminatorName => \"{renderedName ?? symbol.MetadataName}\";")
                           .AppendLine()
                           ;
 
@@ -447,7 +456,7 @@ namespace Wivuu.JsonPolymorphism
         /// <summary>
         /// Retrieve all the discriminators from the execution context
         /// </summary>
-        public IEnumerable<(CSharpSyntaxNode node, ISymbol symbol)> GetDiscriminators(Compilation compilation)
+        public IEnumerable<(AttributeData attr, CSharpSyntaxNode node, ISymbol symbol)> GetDiscriminators(Compilation compilation)
         {
             var attributeSymbol = compilation.GetTypeByMetadataName("System.Text.Json.Serialization.JsonDiscriminatorAttribute");
 
@@ -463,7 +472,7 @@ namespace Wivuu.JsonPolymorphism
                 foreach (var attr in symbol.GetAttributes())
                 {
                     if (attr.AttributeClass?.Equals(attributeSymbol, SymbolEqualityComparer.Default) is true)
-                        yield return (node, symbol);
+                        yield return (attr, node, symbol);
                 }
             }
         }
