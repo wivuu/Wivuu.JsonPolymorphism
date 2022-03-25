@@ -9,7 +9,7 @@
         <ReleaseNotes>
         - Allow custom discriminator name
         </ReleaseNotes>
-        <PackageTags>net6;net5;json;serialize;polymorphism</PackageTags>
+        <PackageTags>net6;json;serialize;polymorphism</PackageTags>
         <PackageProjectUrl>https://github.com/wivuu/Wivuu.JsonPolymorphism</PackageProjectUrl>
         <PackageLicenseFile>LICENSE</PackageLicenseFile>
         <RepositoryUrl>https://github.com/wivuu/Wivuu.JsonPolymorphism.git</RepositoryUrl>
