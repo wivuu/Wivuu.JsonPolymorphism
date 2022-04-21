@@ -243,7 +243,7 @@ namespace Wivuu.JsonPolymorphism
                     }
 
                     // Converter class
-                    using (sb.AppendLine($"internal class {parentSymbol.Name}Converter : Wivuu.Polymorphism.JsonInheritanceConverter<{parentSymbol.Name}>").Indent('{'))
+                    using (sb.AppendLine($"public class {parentSymbol.Name}Converter : Wivuu.Polymorphism.JsonInheritanceConverter<{parentSymbol.Name}>").Indent('{'))
                     {
                         var renderedName = attr?.ConstructorArguments.Length is > 0 
                             ? attr.ConstructorArguments[0].Value?.ToString() 
