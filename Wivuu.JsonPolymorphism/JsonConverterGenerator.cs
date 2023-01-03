@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -34,14 +35,6 @@ namespace Wivuu.JsonPolymorphism
             id: "WIVUUJSONPOLY003",
             title: "No type corresponding with enum member",
             messageFormat: "Member '{0}' has no corresponding type",
-            category: "WivuuJsonPolymorphism",
-            DiagnosticSeverity.Error,
-            isEnabledByDefault: true);
-
-        static readonly DiagnosticDescriptor DiagTypeNotBeConcrete = new DiagnosticDescriptor(
-            id: "WIVUUJSONPOLY004",
-            title: "Type with discriminator must be abstract or interface",
-            messageFormat: "Type must not be concrete",
             category: "WivuuJsonPolymorphism",
             DiagnosticSeverity.Error,
             isEnabledByDefault: true);
@@ -99,7 +92,7 @@ namespace Wivuu.JsonPolymorphism
             var compilation = context.Compilation.AddSyntaxTrees(CSharpSyntaxTree.ParseText(jsonAttributeSource, options));
 
             // Retrieve enum type
-            var enumType = compilation.GetTypeByMetadataName(typeof(System.Enum).FullName);
+            var enumType = compilation.GetTypeByMetadataName(typeof(System.Enum).FullName!);
 
             // Define 'fake' json converter attribute
             {
@@ -134,15 +127,6 @@ namespace Wivuu.JsonPolymorphism
 
                 if (symbol.ContainingType is not INamedTypeSymbol parentSymbol)
                     continue;
-
-                // Ensure that parent type is not concrete so that we do not cause stack overflow on serialize
-                if (!parentTypeNode.Modifiers.Any(SyntaxKind.AbstractKeyword) &&
-                     parentSymbol.TypeKind != TypeKind.Interface)
-                {
-                    context.ReportDiagnostic(
-                        Diagnostic.Create(DiagTypeNotBeConcrete, parentSymbol.Locations[0]));
-                    continue;
-                }
 
                 // Ensure that parent type is partial so we can attach the JsonConverter attribute
                 if (!parentTypeNode.Modifiers.Any(SyntaxKind.PartialKeyword))
@@ -370,6 +354,7 @@ namespace Wivuu.JsonPolymorphism
                     continue;
 
                 var name = member.Name;
+
                 // Get matching types in the context
                 var matches = compilation
                     .GetSymbolsWithName(
@@ -407,6 +392,7 @@ namespace Wivuu.JsonPolymorphism
         internal static int GetIsBaseTypeAll(INamedTypeSymbol match, INamedTypeSymbol of, int level = 0) =>
             match switch
             {
+                // TODO: Only concrete types considered
                 var m when m.Equals(of, SymbolEqualityComparer.Default) => level,
                 var m when m.BaseType is INamedTypeSymbol ty => GetIsBaseTypeAll(ty, of, level + 1),
                 _ => -1,
@@ -499,7 +485,11 @@ namespace Wivuu.JsonPolymorphism
                     {
                         var level = JsonConverterGenerator.GetIsBaseTypeAll(symbol, parentSymbol);
 
-                        if (level > 0)
+                        if (level == 0)
+                            // TODO: Ensure type is concrete
+                            yield return (node, symbol);
+
+                        else if (level > 0)
                             yield return (node, symbol);
                     }
                 }
