@@ -368,7 +368,6 @@ namespace Wivuu.JsonPolymorphism
                     );
 
                 var any = false;
-                (string name, INamedTypeSymbol match, int level)? level0 = default;
 
                 // Ensure type inherits from node
                 foreach (INamedTypeSymbol match in matches)
@@ -385,20 +384,10 @@ namespace Wivuu.JsonPolymorphism
                         any = true;
                         break;
                     }
-                    else if (level == 0 && !hasFallback)
-                    {
-                        level0 = (name, match, level);
-                    }
                 }
 
                 if (!any && !hasFallback)
                 {
-                    if (level0 is not null)
-                    {
-                        yield return level0.Value;
-                        continue;
-                    }
-
                     context.ReportDiagnostic(
                         Diagnostic.Create(DiagNoCorrespondingType, discriminatorEnum.Locations[0], name));
                 }

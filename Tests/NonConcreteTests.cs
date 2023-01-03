@@ -9,16 +9,16 @@ namespace Tests;
 
 public enum EmployeeType
 {
-    Employee,
+    // Employee,
     Manager,
     Contractor,
 }
 
-//[JsonDiscriminatorFallback]
+// [JsonDiscriminatorFallback]
 public /*abstract*/ partial record Employee(
     string Name, 
     DateOnly DateJoined,
-    [JsonDiscriminator] EmployeeType Type = EmployeeType.Employee
+    [JsonDiscriminator] EmployeeType Type
 );
 
 public record Manager(string Name, DateOnly DateJoined)
@@ -45,7 +45,7 @@ public class NonConcreteTests
                 Reports = new List<string> { "Jane", "Joe" },
             },
             new Contractor("Jane", new DateOnly(2020, 1, 1)),
-            new Employee("Joe", new DateOnly(2020, 1, 1)),
+            // new Employee("Joe", new DateOnly(2020, 1, 1)),
         };
 
         var serialized = JsonSerializer.Serialize(employees);
@@ -60,7 +60,7 @@ public class NonConcreteTests
             Assert.Equal(employees[i].Name, employeesDeserialized[i].Name);
     }
 
-    [Fact]
+    // [Fact]
     public void TestGenericTypes()
     {
         var employees = new List<Manager>

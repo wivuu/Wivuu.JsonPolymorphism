@@ -33,7 +33,7 @@ namespace Tests
         {
             var typeAttributes = typeof(Product).GetCustomAttributes(false).OfType<Attribute>();
 
-            dynamic jsonConverterAttribute = typeAttributes.FirstAssignableToTypeNameOrDefault(nameof(JsonConverterAttribute), TypeNameStyle.Name);
+            dynamic jsonConverterAttribute = typeAttributes.FirstAssignableToTypeNameOrDefault(nameof(JsonConverterAttribute), TypeNameStyle.Name)!;
 
             if (jsonConverterAttribute != null)
             {
