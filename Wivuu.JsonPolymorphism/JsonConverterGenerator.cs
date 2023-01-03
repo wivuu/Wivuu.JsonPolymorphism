@@ -68,7 +68,7 @@ namespace Wivuu.JsonPolymorphism
         public void Initialize(GeneratorInitializationContext context)
         {
 #if DEBUG
-            System.Diagnostics.Debugger.Launch();
+            //System.Diagnostics.Debugger.Launch();
 #endif
             context.RegisterForSyntaxNotifications(() => new JsonDiscriminatorReceiver());
         }
