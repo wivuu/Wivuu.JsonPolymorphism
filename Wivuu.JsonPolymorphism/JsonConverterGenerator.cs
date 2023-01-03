@@ -11,6 +11,10 @@ namespace Wivuu.JsonPolymorphism
     [Generator]
     class JsonConverterGenerator : ISourceGenerator
     {
+        static object[] items = {
+
+        };
+
         static readonly DiagnosticDescriptor DiagNotPartial = new DiagnosticDescriptor(
             id: "WIVUUJSONPOLY001",
             title: "Type with discriminator must be marked 'partial'",
@@ -123,15 +127,6 @@ namespace Wivuu.JsonPolymorphism
 
                 if (symbol.ContainingType is not INamedTypeSymbol parentSymbol)
                     continue;
-
-                // // Ensure that parent type is not concrete so that we do not cause stack overflow on serialize
-                // if (!parentTypeNode.Modifiers.Any(SyntaxKind.AbstractKeyword) &&
-                //      parentSymbol.TypeKind != TypeKind.Interface)
-                // {
-                //     context.ReportDiagnostic(
-                //         Diagnostic.Create(DiagTypeNotBeConcrete, parentSymbol.Locations[0]));
-                //     continue;
-                // }
 
                 // Ensure that parent type is partial so we can attach the JsonConverter attribute
                 if (!parentTypeNode.Modifiers.Any(SyntaxKind.PartialKeyword))

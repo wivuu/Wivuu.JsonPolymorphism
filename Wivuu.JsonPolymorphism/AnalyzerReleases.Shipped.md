@@ -23,3 +23,11 @@ WIVUUJSONPOLY004  | Usage    |  Error   | WIVUUJSONPOLY004_WivuuJsonPolymorphism
 Rule ID | Category | Severity | Notes
 --------|----------|----------|--------------------
 WIVUUJSONPOLY005  | Usage    |  Error   | WIVUUJSONPOLY005_WivuuJsonPolymorphism
+
+## Release 1.0.17
+
+### Removed Rules
+Rule ID | Category | Severity | Notes
+--------|----------|----------|--------------------
+WIVUUJSONPOLY004  | Usage    | Error   | WIVUUJSONPOLY004_WivuuJsonPolymorphism
+

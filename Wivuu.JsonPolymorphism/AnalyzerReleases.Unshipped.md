@@ -4,8 +4,3 @@
 ### New Rules
 Rule ID | Category | Severity | Notes
 --------|----------|----------|--------------------
-
-### Removed Rules
-Rule ID | Category | Severity | Notes
---------|----------|----------|--------------------
-WIVUUJSONPOLY004  | Usage    | Error   | WIVUUJSONPOLY004_WivuuJsonPolymorphism
