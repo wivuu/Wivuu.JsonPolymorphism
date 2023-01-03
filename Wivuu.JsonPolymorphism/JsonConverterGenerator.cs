@@ -11,10 +11,6 @@ namespace Wivuu.JsonPolymorphism
     [Generator]
     class JsonConverterGenerator : ISourceGenerator
     {
-        static object[] items = {
-
-        };
-
         static readonly DiagnosticDescriptor DiagNotPartial = new DiagnosticDescriptor(
             id: "WIVUUJSONPOLY001",
             title: "Type with discriminator must be marked 'partial'",
@@ -68,7 +64,7 @@ namespace Wivuu.JsonPolymorphism
         public void Initialize(GeneratorInitializationContext context)
         {
 #if DEBUG
-            //System.Diagnostics.Debugger.Launch();
+            System.Diagnostics.Debugger.Launch();
 #endif
             context.RegisterForSyntaxNotifications(() => new JsonDiscriminatorReceiver());
         }
@@ -92,7 +88,7 @@ namespace Wivuu.JsonPolymorphism
             var compilation = context.Compilation.AddSyntaxTrees(CSharpSyntaxTree.ParseText(jsonAttributeSource, options));
 
             // Retrieve enum type
-            var enumType = compilation.GetTypeByMetadataName(typeof(System.Enum).FullName);
+            var enumType = compilation.GetTypeByMetadataName(typeof(System.Enum).FullName!);
 
             // Define 'fake' json converter attribute
             {
@@ -372,6 +368,7 @@ namespace Wivuu.JsonPolymorphism
                     );
 
                 var any = false;
+                (string name, INamedTypeSymbol match, int level)? level0 = default;
 
                 // Ensure type inherits from node
                 foreach (INamedTypeSymbol match in matches)
@@ -388,10 +385,20 @@ namespace Wivuu.JsonPolymorphism
                         any = true;
                         break;
                     }
+                    else if (level == 0 && !hasFallback)
+                    {
+                        level0 = (name, match, level);
+                    }
                 }
 
                 if (!any && !hasFallback)
                 {
+                    if (level0 is not null)
+                    {
+                        yield return level0.Value;
+                        continue;
+                    }
+
                     context.ReportDiagnostic(
                         Diagnostic.Create(DiagNoCorrespondingType, discriminatorEnum.Locations[0], name));
                 }
@@ -401,6 +408,7 @@ namespace Wivuu.JsonPolymorphism
         internal static int GetIsBaseTypeAll(INamedTypeSymbol match, INamedTypeSymbol of, int level = 0) =>
             match switch
             {
+                // TODO: Only concrete types considered
                 var m when m.Equals(of, SymbolEqualityComparer.Default) => level,
                 var m when m.BaseType is INamedTypeSymbol ty => GetIsBaseTypeAll(ty, of, level + 1),
                 _ => -1,
