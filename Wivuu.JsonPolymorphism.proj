@@ -1,13 +1,13 @@
 <Project>
 
     <PropertyGroup>
-        <VersionPrefix>1.0.18</VersionPrefix>
+        <VersionPrefix>1.0.20</VersionPrefix>
         <Authors>Erik O'Leary</Authors>
         <Company>Wivuu</Company>
         <Product>Wivuu JsonPolymorphism</Product>
         <Description>Adds System.Text.Json serializer support for polymorphism with a discriminator attribute.</Description>
         <ReleaseNotes>
-        - Allow base type to not be abstract
+        - Remove support for .NET 5.0 and below (.NET Standard 2.0), which are out-of-support.
         </ReleaseNotes>
         <PackageTags>net6;json;serialize;polymorphism</PackageTags>
         <PackageProjectUrl>https://github.com/wivuu/Wivuu.JsonPolymorphism</PackageProjectUrl>
