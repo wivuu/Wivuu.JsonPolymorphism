@@ -1,15 +1,21 @@
 <Project>
 
     <PropertyGroup>
-        <VersionPrefix>1.0.20</VersionPrefix>
+        <VersionPrefix>1.1.0</VersionPrefix>
         <Authors>Erik O'Leary</Authors>
         <Company>Wivuu</Company>
         <Product>Wivuu JsonPolymorphism</Product>
         <Description>Adds System.Text.Json serializer support for polymorphism with a discriminator attribute.</Description>
         <ReleaseNotes>
-        - Remove support for .NET 5.0 and below (.NET Standard 2.0), which are out-of-support.
+        - Requires the .NET 10 SDK or later (the generator now targets net10.0); projects can still target any framework.
+        - Support C# 15 'closed' base types: unmapped subtypes are a build error (WIVUUJSONPOLY006) and the generated Write switch is exhaustive.
+        - Deserialize without an intermediate JsonElement, so each object is no longer buffered into a DOM.
+        - Find the discriminator using PropertyNamingPolicy, [JsonPropertyName] and PropertyNameCaseInsensitive.
+        - New build error when the discriminator isn't the first property written (WIVUUJSONPOLY007); fix with [JsonPropertyOrder(-1)], or lower its severity in .editorconfig.
+        - Support types declared in the global namespace.
+        - Non-object JSON for a polymorphic type now throws JsonException.
         </ReleaseNotes>
-        <PackageTags>net6;json;serialize;polymorphism</PackageTags>
+        <PackageTags>net10;json;serialize;polymorphism</PackageTags>
         <PackageProjectUrl>https://github.com/wivuu/Wivuu.JsonPolymorphism</PackageProjectUrl>
         <PackageLicenseFile>LICENSE</PackageLicenseFile>
         <RepositoryUrl>https://github.com/wivuu/Wivuu.JsonPolymorphism.git</RepositoryUrl>
