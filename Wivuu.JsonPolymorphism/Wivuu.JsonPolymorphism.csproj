@@ -4,12 +4,16 @@
   <PropertyGroup>
     <Nullable>enable</Nullable>
     <LangVersion>11</LangVersion>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <BuildOutputTargetFolder>analyzers</BuildOutputTargetFolder>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.9.2" PrivateAssets="all" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Tests" />
   </ItemGroup>
 
   <ItemGroup>
