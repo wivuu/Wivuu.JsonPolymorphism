@@ -1,5 +1,5 @@
 # JsonPolymorphism
-[![Nuget](https://github.com/wivuu/Wivuu.JsonPolymorphism/workflows/Nuget/badge.svg)](https://github.com/wivuu/Wivuu.JsonPolymorphism/actions?query=workflow%3ANuget)
+[![Release](https://github.com/wivuu/Wivuu.JsonPolymorphism/actions/workflows/release.yml/badge.svg)](https://github.com/wivuu/Wivuu.JsonPolymorphism/actions/workflows/release.yml)
 
 [![wivuu.jsonpolymorphism](https://img.shields.io/nuget/v/wivuu.jsonpolymorphism.svg?label=wivuu.jsonpolymorphism)](https://www.nuget.org/packages/Wivuu.JsonPolymorphism/)
 
