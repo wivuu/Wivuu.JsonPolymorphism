@@ -1,0 +1,40 @@
+name: Release
+
+on:
+  push:
+    tags: [ 'v*' ]
+
+jobs:
+  publish:
+
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write # lets NuGet/login trade a GitHub OIDC token for a temporary nuget.org API key
+
+    steps:
+    - uses: actions/checkout@v5
+    - name: Setup dotnet
+      uses: actions/setup-dotnet@v5
+      with:
+        dotnet-version: |
+          10.0.x
+          11.0.x
+    - name: Run dotnet tests
+      run: dotnet test -c Release
+    - name: Pack
+      run: dotnet pack Wivuu.JsonPolymorphism -c Release -o artifacts
+    - name: Check tag matches package version
+      run: |
+        if [ ! -f "artifacts/Wivuu.JsonPolymorphism.${GITHUB_REF_NAME#v}.nupkg" ]; then
+          echo "::error::Tag $GITHUB_REF_NAME does not match <VersionPrefix> in Wivuu.JsonPolymorphism.proj"
+          ls artifacts
+          exit 1
+        fi
+    - name: NuGet login
+      uses: NuGet/login@v1
+      id: login
+      with:
+        user: ${{ vars.NUGET_USER }}
+    - name: Push to NuGet
+      run: dotnet nuget push "artifacts/Wivuu.JsonPolymorphism.${GITHUB_REF_NAME#v}.nupkg" --api-key ${{ steps.login.outputs.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
